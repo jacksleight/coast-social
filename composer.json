@@ -9,7 +9,12 @@
     {"name": "Jack Sleight", "email": "jacksleight@gmail.com"}
   ],
   "require": {
-    "php": ">=5.5.0"
+    "php": ">=5.5.0",
+    "j7mbo/twitter-api-php": "1.0.*",
+    "jacksleight/coast": "0.5.*",
+    "nesbot/carbon": "1.*",
+    "instaphp/instaphp": "2.0.*",
+    "facebook/php-sdk-v4": "5.1.*"
   },
   "autoload": {
     "psr-4": {
