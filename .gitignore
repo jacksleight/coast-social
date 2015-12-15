@@ -1,0 +1,9 @@
+/vendor
+/report
+/build
+/sandbox
+/node_modules
+
+composer.lock
+error.log
+npm-debug.log

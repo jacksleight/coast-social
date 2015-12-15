@@ -1,0 +1,19 @@
+{
+  "name": "jacksleight/coast-social",
+  "type": "library",
+  "description": "Coast component for accessing social media APIs",
+  "keywords": ["framework", "coast"],
+  "homepage": "http://coast.jacksleight.com/",
+  "license": "MIT",
+  "authors": [
+    {"name": "Jack Sleight", "email": "jacksleight@gmail.com"}
+  ],
+  "require": {
+    "php": ">=5.5.0"
+  },
+  "autoload": {
+    "psr-4": {
+      "Coast\\Social\\": "lib/"
+    }
+  }
+}
