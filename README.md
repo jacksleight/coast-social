@@ -6,14 +6,14 @@ Coast Social can retrieve latest feeds and URL statistics from various social me
 
 ## Supported Platforms & Methods
 
-           | Feed | Stats
+           | Feed | Stats (URL)
 -----------| -----|--------
 Facebook   | Yes  | Shares, Comments
-Twitter    | Yes  | –
+Twitter    | Yes  | ~~Shares~~
 Instagram  | Yes  | –
 Pinterest  | Yes  | Shares
 
-Twitter share counts are not available as there's currently no API to access that data (https://blog.twitter.com/2015/hard-decisions-for-a-sustainable-platform).
+Twitter share counts are not available as there's currently no API to access that data: https://blog.twitter.com/2015/hard-decisions-for-a-sustainable-platform)
 
 ## Installation
 
