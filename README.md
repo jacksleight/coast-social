@@ -2,6 +2,8 @@
 
 Coast component for accessing social media APIs.
 
+Coast Social can be used to retrieve latest feeds and URL statistics from various social media platforms.
+
 ## Installation
 
 The easiest way to install Coast Social is through [Composer](https://getcomposer.org/doc/00-intro.md), by creating a file called `composer.json` containing:
@@ -18,6 +20,65 @@ And then running:
 
 ```bash
 composer.phar install
+```
+
+## Usage
+
+```php
+use Coast\Social\Provider\Facebook;
+use Coast\Social\Provider\Twitter;
+use Coast\Social\Provider\Instagram;
+use Coast\Social\Provider\Pinterest;
+
+$provider = new Twitter([
+    'credentials' => [
+        'consumerKey'       => '',
+        'consumerSecret'    => '',
+        'accessToken'       => '',
+        'accessTokenSecret' => '',
+    ],
+]);
+$feed = $provider->feed([
+    'username' => '',
+    'limit'    => 10,
+]);
+
+$provider = new Instagram([
+    'credentials' => [
+        'clientId' => '',
+    ],
+]);
+$feed = $provider->feed([
+    'username' => '', // or…
+    'userId'   => '',
+    'limit'    => 10,
+]);
+
+$provider = new Facebook([
+    'credentials' => [
+        'appId'       => '',
+        'appSecret'   => '',
+        'accessToken' => '', // Get from https://developers.facebook.com/tools/explorer/
+    ],
+]);
+$feed = $provider->feed([
+    'objectId' => '',
+    'limit'    => 10,
+]);
+$stats = $provider->stats(new Coast\Url('http://www.example.com/'));
+
+$provider = new Pinterest([
+    'credentials' => [
+        'appId'       => '',
+        'appSecret'   => '',
+        'accessToken' => '', // Get from https://developers.pinterest.com/tools/access_token/
+    ],
+]);
+$feed = $provider->feed([
+    'boardId' => '',
+    'limit'   => 10,
+]);
+$stats = $provider->stats(new Coast\Url('http://www.example.com/'));
 ```
 
 ## Licence
