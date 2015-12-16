@@ -35,9 +35,9 @@ class Pinterest extends External
                 ->queryParams($args);
             $http = new Http();
             $res  = $http->get(new Url($url));
-            // if (!$res->isSuccess()) {
-            //     throw new Social\Exception($res->status());
-            // }
+            if (!$res->isSuccess()) {
+                throw new Social\Exception($res->status());
+            }
             $res = substr($res->body(), 13, strlen($res->body()) - 14);
             $res = json_decode($res, true);
             return $res;
