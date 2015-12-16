@@ -87,8 +87,8 @@ class Facebook extends External
         ]);
 
         $stats = [
-            'comments' => $data['share']['comment_count'],
             'shares'   => $data['share']['share_count'],
+            'comments' => $data['share']['comment_count'],
         ];
 
         return $stats;

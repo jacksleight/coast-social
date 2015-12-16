@@ -2,7 +2,7 @@
 
 Coast component for accessing social media APIs.
 
-Coast Social can be used to retrieve latest feeds and URL statistics from various social media platforms.
+Coast Social can retrieve latest feeds and URL statistics from various social media platforms in a standardised format.
 
 ## Installation
 

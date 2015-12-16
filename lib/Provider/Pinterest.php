@@ -116,7 +116,7 @@ class Pinterest extends External
         ]);
 
         $stats = [
-            'pins' => $data['count'],
+            'shares' => $data['count'],
         ];
 
         return $stats;
