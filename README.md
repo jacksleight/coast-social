@@ -4,6 +4,17 @@ Coast component for accessing social media APIs.
 
 Coast Social can retrieve latest feeds and URL statistics from various social media platforms in a standardised format.
 
+## Supported Platforms & Methods
+
+           | Feed | Stats
+-----------| -----|--------
+Facebook   | Yes  | Shares, Comments
+Twitter    | Yes  | –
+Instagram  | Yes  | –
+Pinterest  | Yes  | Shares
+
+Twitter share counts are not available as there's currently no API to access that data (https://blog.twitter.com/2015/hard-decisions-for-a-sustainable-platform).
+
 ## Installation
 
 The easiest way to install Coast Social is through [Composer](https://getcomposer.org/doc/00-intro.md), by creating a file called `composer.json` containing:
@@ -24,37 +35,10 @@ composer.phar install
 
 ## Usage
 
+#### Facebook
+
 ```php
-use Coast\Social\Provider\Facebook;
-use Coast\Social\Provider\Twitter;
-use Coast\Social\Provider\Instagram;
-use Coast\Social\Provider\Pinterest;
-
-$provider = new Twitter([
-    'credentials' => [
-        'consumerKey'       => '',
-        'consumerSecret'    => '',
-        'accessToken'       => '',
-        'accessTokenSecret' => '',
-    ],
-]);
-$feed = $provider->feed([
-    'username' => '',
-    'limit'    => 10,
-]);
-
-$provider = new Instagram([
-    'credentials' => [
-        'clientId' => '',
-    ],
-]);
-$feed = $provider->feed([
-    'username' => '', // or…
-    'userId'   => '',
-    'limit'    => 10,
-]);
-
-$provider = new Facebook([
+$provider = new Coast\Social\Provider\Facebook([
     'credentials' => [
         'appId'       => '',
         'appSecret'   => '',
@@ -66,8 +50,44 @@ $feed = $provider->feed([
     'limit'    => 10,
 ]);
 $stats = $provider->stats(new Coast\Url('http://www.example.com/'));
+```
 
-$provider = new Pinterest([
+#### Twitter
+
+```php
+$provider = new Coast\Social\Provider\Twitter([
+    'credentials' => [
+        'consumerKey'       => '',
+        'consumerSecret'    => '',
+        'accessToken'       => '',
+        'accessTokenSecret' => '',
+    ],
+]);
+$feed = $provider->feed([
+    'username' => '',
+    'limit'    => 10,
+]);
+```
+
+#### Instagram
+
+```php
+$provider = new Coast\Social\Provider\Instagram([
+    'credentials' => [
+        'clientId' => '',
+    ],
+]);
+$feed = $provider->feed([
+    'username' => '', // or…
+    'userId'   => '',
+    'limit'    => 10,
+]);
+```
+
+#### Pinterest
+
+```php
+$provider = new Coast\Social\Provider\Pinterest([
     'credentials' => [
         'appId'       => '',
         'appSecret'   => '',
