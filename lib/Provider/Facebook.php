@@ -9,24 +9,22 @@ namespace Coast\Social\Provider;
 use Carbon\Carbon;
 use Coast\Url;
 use Coast\Social\Provider;
-use Facebook\Facebook as FacebookSdk;
+use Coast\Social\Provider\External;
+use Facebook\Facebook as FacebookApi;
 
-class Facebook extends Provider
+class Facebook extends External
 {
     protected $_name = 'facebook';
 
-    public function api()
+    protected function _api()
     {
-        if (!isset($this->_api)) {
-            $this->_api = new FacebookSdk([
-                'app_id'     => $this->_credentials['appId'],
-                'app_secret' => $this->_credentials['appSecret'],
-            ]);
-        }
-        return $this->_api;
+        return new FacebookApi([
+            'app_id'     => $this->_credentials['appId'],
+            'app_secret' => $this->_credentials['appSecret'],
+        ]);
     }
 
-    public function request($method, array $args = array())
+    protected function _request($method, array $args = array())
     {
         $res = $this->api()->get(
             "/{$method}?" . http_build_query($args),
@@ -35,39 +33,56 @@ class Facebook extends Provider
         return $res->getDecodedBody();
     }
 
-    public function feed($username)
+    protected function _feed(array $params, array $extra = array())
     {
-        $data = $this->fetch("{$username}/feed", [
-            'fields' => 'id,created_time,from{id,username,name},message',
-        ]);
+        $params = $params + [
+            'objectId' => null,
+        ];
+        if (!isset($params['objectId'])) {
+            throw new Social\Exception('No object ID specified');
+        }
+
+        $data = $this->fetch("{$params['objectId']}/feed", [
+            'fields' => 'id,created_time,name,caption,description,link,picture,properties,type,from{id,username,name},message',
+            'limit'  => $params['limit'],
+        ] + $extra);
 
         $feed = [];
         foreach ($data['data'] as $post) {
-            $subId = substr($post['id'], strpos($post['id'], '_') + 1);
+            if (isset($post['from']['username'])) {
+                $identifier = $post['from']['username'];
+                $username   = $post['from']['username'];
+            } else {
+                $identifier = $post['from']['id'];
+                $username   = null;                
+            }
+            $text = isset($post['message'])
+                ? $post['message']
+                : null;
             $feed[] = [
                 'id'    => $post['id'],
-                'url'   => new Url("https://www.facebook.com/{$post['from']['username']}/posts/{$subId}"),
+                'url'   => new Url("https://www.facebook.com/{$identifier}/posts/" . substr($post['id'], strpos($post['id'], '_') + 1)),
                 'date'  => new Carbon($post['created_time']),
-                'text'  => isset($post['message']) ? $post['message'] : null,
-                'html'  => isset($post['message']) ? $post['message'] : null,
+                'text'  => $text,
+                'html'  => $this->textToHtml($text),
+                'image' => isset($post['picture']) ? new Url($post['picture']) : null,
                 'user'   => [
                     'id'       => $post['from']['id'],
-                    'url'      => new Url("https://www.facebook.com/{$post['from']['username']}"),
+                    'url'      => new Url("https://www.facebook.com/{$identifier}"),
                     'name'     => $post['from']['name'],
-                    'username' => $post['from']['username'],
+                    'username' => $username,
                 ],
                 'source' => $post,
             ];
         }
 
-        $feed = $this->_normalizeFeed($feed);
         return $feed;
     }
 
-    public function stats(Url $url)
+    protected function _stats(Url $url)
     {
         $data = $this->fetch('', [
-            'id' => $url->toString(),
+            'id'     => $url->toString(),
             'fields' => 'share',
         ]);
 
@@ -76,7 +91,6 @@ class Facebook extends Provider
             'shares'   => $data['share']['share_count'],
         ];
 
-        // $stats = $this->_normalizestats($stats);
         return $stats;
     }
 }

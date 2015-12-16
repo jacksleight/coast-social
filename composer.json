@@ -14,6 +14,7 @@
     "jacksleight/coast": "0.5.*",
     "nesbot/carbon": "1.*",
     "instaphp/instaphp": "2.0.*",
+    "dirkgroenen/pinterest-api-php": "0.1.*",
     "facebook/php-sdk-v4": "5.1.*"
   },
   "autoload": {

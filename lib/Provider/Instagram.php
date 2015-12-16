@@ -7,25 +7,24 @@
 namespace Coast\Social\Provider;
 
 use Carbon\Carbon;
+use Coast\Social;
 use Coast\Url;
 use Coast\Social\Provider;
+use Coast\Social\Provider\External;
 use Instaphp\Instaphp;
 
-class Instagram extends Provider
+class Instagram extends External
 {
     protected $_name = 'instagram';
 
-    public function api()
+    protected function _api()
     {
-        if (!isset($this->_api)) {
-            $this->_api = new Instaphp([
-                'client_id' => $this->_credentials['clientId'],
-            ]);
-        }
-        return $this->_api;
+        return new Instaphp([
+            'client_id' => $this->_credentials['clientId'],
+        ]);
     }
 
-    public function request($method, array $args = array())
+    protected function _request($method, array $args = array())
     {
         $parts  = explode('/', $method);
         $method = array_pop($parts);
@@ -35,29 +34,39 @@ class Instagram extends Provider
         }
 
         $res = call_user_func_array([$object, $method], $args);
-        if (!$res->data) {
-            throw new \Exception();
+        if (!isset($res->data)) {
+            throw new Social\Exception('Received invalid response data');
         }
 
         return $res;
     }
 
-    public function feed($username)
+    protected function _feed(array $params, array $extra = array())
     {
-        $data = $this->fetch('users/search', [$username], null);
-        foreach ($data->data as $user) {
-            if ($user['username'] == $username) {
-                $id = $user['id'];
-                break;
-            }
-        }
-        if (!isset($id)) {
-            throw new Exception();
+        $params = $params + [
+            'username' => null,
+            'userId'   => null,
+        ];
+        if (!isset($params['userId']) && !isset($params['username'])) {
+            throw new Social\Exception('No user ID or username specified');
         }
 
-        $data = $this->fetch('users/recent', [$id, [
-            'count' => 10,
-        ]]);
+        if (!isset($params['userId'])) {
+            $data = $this->fetch('users/search', [$params['username']], null);
+            foreach ($data->data as $user) {
+                if ($user['username'] == $params['username']) {
+                    $params['userId'] = $user['id'];
+                    break;
+                }
+            }
+            if (!isset($params['userId'])) {
+                throw new Social\Exception("Username '{$params['username']}' does not exist");
+            }
+        }
+
+        $data = $this->fetch('users/recent', [$params['userId'], [
+            'count' => $params['limit'],
+        ] + $extra]);
 
         $feed = [];
         foreach ($data->data as $post) {
@@ -66,7 +75,7 @@ class Instagram extends Provider
                 'url'   => new Url($post['link']),
                 'date'  => new Carbon("@{$post['created_time']}"),
                 'text'  => $post['caption']['text'],
-                'html'  => $post['caption']['text'],
+                'html'  => $this->textToHtml($post['caption']['text']),
                 'image' => new Url($post['images']['standard_resolution']['url']),
                 'user'   => [
                     'id'       => $post['user']['id'],
@@ -78,7 +87,14 @@ class Instagram extends Provider
             ];
         }
 
-        $feed = $this->_normalizeFeed($feed);
         return $feed;
+    }
+
+    public function textToHtml($text)
+    {
+        $text = preg_replace("/@(\w+)/", '<a href="https://www.instagram.com/$1" target="_blank">@$1</a>', $text); 
+        $text = preg_replace("/\#(\w+)/", '<a href="https://www.instagram.com/explore/tags/$1" target="_blank">#$1</a>', $text); 
+
+        return parent::textToHtml($text);
     }
 }

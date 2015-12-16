@@ -6,11 +6,5 @@
 
 namespace Coast\Social;
 
-use Coast\Url;
-
-interface Provider
-{
-    public function feed(array $params, array $extra = array());
-
-    public function stats(Url $url);
-}
+class Exception extends \Exception
+{}

@@ -7,28 +7,27 @@
 namespace Coast\Social\Provider;
 
 use Carbon\Carbon;
+use Coast\Social;
 use Coast\Url;
 use Coast\Social\Provider;
+use Coast\Social\Provider\External;
 use TwitterAPIExchange;
 
-class Twitter extends Provider
+class Twitter extends External
 {
     protected $_name = 'twitter';
 
-    public function api()
+    protected function _api()
     {
-        if (!isset($this->_api)) {
-            $this->_api = new \TwitterAPIExchange([
-                'consumer_key'              => $this->_credentials['consumerKey'],
-                'consumer_secret'           => $this->_credentials['consumerSecret'],
-                'oauth_access_token'        => $this->_credentials['accessToken'],
-                'oauth_access_token_secret' => $this->_credentials['accessTokenSecret']
-            ]);
-        }
-        return $this->_api;
+        return new TwitterAPIExchange([
+            'consumer_key'              => $this->_credentials['consumerKey'],
+            'consumer_secret'           => $this->_credentials['consumerSecret'],
+            'oauth_access_token'        => $this->_credentials['accessToken'],
+            'oauth_access_token_secret' => $this->_credentials['accessTokenSecret']
+        ]);
     }
 
-    public function request($method, array $args = array())
+    protected function _request($method, array $args = array())
     {
         $res = $this->api()
             ->setGetfield('?' . http_build_query($args))
@@ -37,30 +36,37 @@ class Twitter extends Provider
 
         $res = json_decode($res, true);
         if (!$res) {
-            throw new \Exception();
+            throw new Social\Exception('Received invalid response data');
         }
-        if (isset($res->errors)) {
-            throw new \Exception();
+        if (isset($res['errors'])) {
+            throw new Social\Exception($res['errors'][0]['message']);
         }
 
         return $res;
     }
 
-    public function feed($username)
+    protected function _feed(array $params, array $extra = array())
     {
-        $tweets = $this->fetch('statuses/user_timeline', [
-            'screen_name' => $username,
-            'count'       => 100,
-        ]);
+        $params = $params + [
+            'username' => null,
+        ];
+        if (!isset($params['username'])) {
+            throw new Social\Exception('No username specified');
+        }
+
+        $data = $this->fetch('statuses/user_timeline', [
+            'screen_name' => $params['username'],
+            'count'       => $params['limit'],
+        ] + $extra);
 
         $feed = [];
-        foreach ($tweets as $tweet) {
+        foreach ($data as $tweet) {
             $feed[] = [
                 'id'     => $tweet['id_str'],
                 'url'    => new Url("https://twitter.com/{$tweet['user']['screen_name']}/status/{$tweet['id_str']}"),
                 'date'   => new Carbon($tweet['created_at']),
                 'text'   => $tweet['text'],
-                'html'   => $this->_tweetToHtml($tweet),
+                'html'   => $this->tweetToHtml($tweet),
                 'user'   => [
                     'id'       => $tweet['user']['id_str'],
                     'url'      => new Url("https://twitter.com/{$tweet['user']['screen_name']}"),
@@ -71,11 +77,18 @@ class Twitter extends Provider
             ];
         }
 
-        $feed = $this->_normalizeFeed($feed);
         return $feed;
     }
 
-    protected function _tweetToHtml($tweet)
+    public function textToHtml($text)
+    {
+        $text = preg_replace("/@(\w+)/", '<a href="http://www.twitter.com/$1" target="_blank">@$1</a>', $text); 
+        $text = preg_replace("/\#(\w+)/", '<a href="http://search.twitter.com/search?q=$1" target="_blank">#$1</a>', $text); 
+        
+        return parent::textToHtml($text);
+    }
+
+    public function tweetToHtml($tweet)
     {
         $entities = [];
         foreach ($tweet['entities']['urls'] as $entity) {
@@ -104,14 +117,12 @@ class Twitter extends Provider
                 ];
             }
         }
-
         $html = $tweet['text'];
         foreach ($entities as $entity ) {
             $search  = mb_substr($tweet['text'], $entity['indices'][0], ($entity['indices'][1] - $entity['indices'][0]), 'utf-8');
-            $replace = "<a href=\"{$entity['href']}\">{$search}</a>";
+            $replace = "<a href=\"{$entity['href']}\" target=\"_blank\">{$search}</a>";
             $html    = str_replace($search, $replace, $html);
         }
-
         return $html;
     }
 }
