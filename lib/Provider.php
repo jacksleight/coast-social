@@ -10,6 +10,16 @@ use Coast\Url;
 
 abstract class Provider
 {
+    public function __construct(array $options = array())
+    {
+        foreach ($options as $name => $value) {
+            if ($name[0] == '_') {
+                throw new \Coast\Exception("Access to '{$name}' is prohibited");  
+            }
+            $this->$name($value);
+        }
+    }
+
     public function feed(array $params)
     {
         $params = $params + [

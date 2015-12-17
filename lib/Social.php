@@ -47,6 +47,9 @@ class Social extends Provider
             $provider = $this->provider($name);
             $data = $provider->feed($providerParams);
             if ($data !== false) {
+                foreach ($data as $i => $item) {
+                    $data[$i]['provider'] = $name;
+                }
                 $feed[$name] = $data;
             }
         }

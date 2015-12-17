@@ -16,16 +16,6 @@ abstract class External extends Provider
 
     protected $_api;
 
-    public function __construct(array $options = array())
-    {
-        foreach ($options as $name => $value) {
-            if ($name[0] == '_') {
-                throw new \Coast\Exception("Access to '{$name}' is prohibited");  
-            }
-            $this->$name($value);
-        }
-    }
-
     public function credentials($credentials = null)
     {
         if (func_num_args() > 0) {
