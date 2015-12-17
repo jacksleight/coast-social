@@ -24,14 +24,14 @@ class Instagram extends External
         ] + $params);
            
         $res = $this->_http->get($url);
-        if (!$res->isSuccess() && $res->header('content-type') == 'text/html') {
-            throw new Social\Exception($res->status());
+        if (strpos($res->header('content-type'), 'application/json') === false) {
+            throw new Social\Exception('Non JSON response');
         }
         $data = $res->json();
         if ($data === false) {
             throw new Social\Exception('Malformed JSON response');
         }
-        if ($data['meta']['code'] != 200) {
+        if (!$res->isSuccess() || $data['meta']['code'] != 200) {
             throw new Social\Exception($data['meta']['error_message']);
         }
 

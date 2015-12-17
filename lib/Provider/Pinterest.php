@@ -16,36 +16,35 @@ use DirkGroenen\Pinterest\Pinterest as PinterestApi;
 
 class Pinterest extends External
 {
+    protected $_endpoint = 'https://api.pinterest.com/v1/';
+
     protected function _request($method, array $params = array())
     {
-        $api = new PinterestApi(
-            $this->_credentials['appId'],
-            $this->_credentials['appSecret']
-        );
-        $api->auth->setOAuthToken($this->_credentials['accessToken']);
-
-        if ($method == 'urls/count') {
-            $url = (new Url('https://api.pinterest.com/v1/urls/count.json'))
-                ->queryParams($params);
-            $http = new Http();
-            $res  = $http->get(new Url($url));
-            if (!$res->isSuccess()) {
-                throw new Social\Exception($res->status());
+        $url = (new Url("{$this->_endpoint}{$method}"))->queryParams([
+            'access_token' => $this->_credentials['accessToken'],
+        ] + $params);
+           
+        $res = $this->_http->get($url);
+        if ($res->header('content-type') == 'application/javascript') {
+            $data = json_decode(substr($res->body(), 13, strlen($res->body()) - 14), true);
+            if ($data === false) {
+                throw new Social\Exception('Malformed JSON response');
             }
-            $res = substr($res->body(), 13, strlen($res->body()) - 14);
-            $res = json_decode($res, true);
-            return $res;
+            $data = ['data' => $data];
+        } else {
+            if (strpos($res->header('content-type'), 'application/json') === false) {
+                throw new Social\Exception('Non JSON response');
+            }
+            $data = $res->json();
+            if ($data === false) {
+                throw new Social\Exception('Malformed JSON response');
+            }
+        }
+        if (!$res->isSuccess() || isset($data['status']) && $data['status'] == 'failure') {
+            throw new Social\Exception($data['message']);
         }
 
-        $parts  = explode('/', $method);
-        $method = array_pop($parts);
-        $object = $api;
-        foreach ($parts as $part) {
-            $object = $object->{$part};
-        }
-
-        $res = call_user_func_array([$object, $method], $params);
-        return $res;
+        return $data['data'];
     }
 
     protected function _feed(array $params)
@@ -54,29 +53,29 @@ class Pinterest extends External
             throw new Social\Exception('No ID specified');
         }
 
-        $data = $this->fetch('pins/fromBoard', [$params['boardId'], [
+        $data = $this->fetch("boards/{$params['id']}/pins", [
             'fields' => 'id,link,url,creator(id,username,first_name,last_name,bio,created_at,counts,image,url),board,created_at,note,color,counts,media,attribution,image,metadata',
             'limit'  => $params['limit'],
-        ] + $params['native']]);
+        ] + $params['native']);
 
         $feed = [];
         foreach ($data as $pin) {
             $feed[] = [
-                'id'    => $pin->id,
-                'url'   => new Url($pin->url),
-                'date'  => new Carbon($pin->created_at),
-                'text'  => $pin->note,
-                'html'  => $this->textToHtml($pin->note),
+                'id'    => $pin['id'],
+                'url'   => new Url($pin['url']),
+                'date'  => new Carbon($pin['created_at']),
+                'text'  => $pin['note'],
+                'html'  => $this->textToHtml($pin['note']),
                 'image' => [
-                    'url'    => new Url($pin->image['original']['url']),
-                    'width'  => $pin->image['original']['width'],
-                    'height' => $pin->image['original']['height'],
+                    'url'    => new Url($pin['image']['original']['url']),
+                    'width'  => $pin['image']['original']['width'],
+                    'height' => $pin['image']['original']['height'],
                 ],
                 'user'  => [
-                    'id'       => $pin->creator['id'],
-                    'url'      => new Url($pin->creator['url']),
-                    'name'     => "{$pin->creator['first_name']} {$pin->creator['last_name']}",
-                    'username' => $pin->creator['username'],
+                    'id'       => $pin['creator']['id'],
+                    'url'      => new Url($pin['creator']['url']),
+                    'name'     => "{$pin['creator']['first_name']} {$pin['creator']['last_name']}",
+                    'username' => $pin['creator']['username'],
                 ],
                 'native' => $pin,
             ];
@@ -95,7 +94,7 @@ class Pinterest extends External
 
     protected function _urlStats(Url $url)
     {
-        $data = $this->fetch('urls/count', [
+        $data = $this->fetch('urls/count.json', [
             'url' => $url->toString(),
         ]);
 
