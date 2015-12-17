@@ -14,8 +14,6 @@ use Facebook\Facebook as FacebookApi;
 
 class Facebook extends External
 {
-    protected $_name = 'facebook';
-
     protected function _api()
     {
         return new FacebookApi([
@@ -33,19 +31,19 @@ class Facebook extends External
         return $res->getDecodedBody();
     }
 
-    protected function _feed(array $params, array $extra = array())
+    protected function _feed(array $params)
     {
-        $params = $params + [
-            'objectId' => null,
-        ];
-        if (!isset($params['objectId'])) {
-            throw new Social\Exception('No object ID specified');
+        if (!isset($params['id']) && !isset($params['username'])) {
+            throw new Social\Exception('No ID or username specified');
         }
 
-        $data = $this->fetch("{$params['objectId']}/feed", [
+        $id = isset($params['id'])
+            ? $params['id']
+            : $params['username'];
+        $data = $this->fetch("{$id}/feed", [
             'fields' => 'id,created_time,name,caption,description,link,picture,properties,type,from{id,username,name},message',
             'limit'  => $params['limit'],
-        ] + $extra);
+        ] + $params['native']);
 
         $feed = [];
         foreach ($data['data'] as $post) {
@@ -65,21 +63,23 @@ class Facebook extends External
                 'date'  => new Carbon($post['created_time']),
                 'text'  => $text,
                 'html'  => $this->textToHtml($text),
-                'image' => isset($post['picture']) ? new Url($post['picture']) : null,
-                'user'   => [
+                'image' => [
+                    'url' => isset($post['picture']) ? new Url($post['picture']) : null,
+                ],
+                'user'  => [
                     'id'       => $post['from']['id'],
                     'url'      => new Url("https://www.facebook.com/{$identifier}"),
                     'name'     => $post['from']['name'],
                     'username' => $username,
                 ],
-                'source' => $post,
+                'native' => $post,
             ];
         }
 
         return $feed;
     }
 
-    protected function _stats(Url $url)
+    protected function _urlStats(Url $url)
     {
         $data = $this->fetch('', [
             'id'     => $url->toString(),

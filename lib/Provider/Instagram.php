@@ -15,8 +15,6 @@ use Instaphp\Instaphp;
 
 class Instagram extends External
 {
-    protected $_name = 'instagram';
-
     protected function _api()
     {
         return new Instaphp([
@@ -41,32 +39,28 @@ class Instagram extends External
         return $res;
     }
 
-    protected function _feed(array $params, array $extra = array())
+    protected function _feed(array $params)
     {
-        $params = $params + [
-            'username' => null,
-            'userId'   => null,
-        ];
-        if (!isset($params['userId']) && !isset($params['username'])) {
-            throw new Social\Exception('No user ID or username specified');
+        if (!isset($params['id']) && !isset($params['username'])) {
+            throw new Social\Exception('No ID or username specified');
         }
 
-        if (!isset($params['userId'])) {
+        if (!isset($params['id'])) {
             $data = $this->fetch('users/search', [$params['username']], null);
             foreach ($data->data as $user) {
                 if ($user['username'] == $params['username']) {
-                    $params['userId'] = $user['id'];
+                    $params['id'] = $user['id'];
                     break;
                 }
             }
-            if (!isset($params['userId'])) {
+            if (!isset($params['id'])) {
                 throw new Social\Exception("Username '{$params['username']}' does not exist");
             }
         }
 
-        $data = $this->fetch('users/recent', [$params['userId'], [
+        $data = $this->fetch('users/recent', [$params['id'], [
             'count' => $params['limit'],
-        ] + $extra]);
+        ] + $params['native']]);
 
         $feed = [];
         foreach ($data->data as $post) {
@@ -76,14 +70,18 @@ class Instagram extends External
                 'date'  => new Carbon("@{$post['created_time']}"),
                 'text'  => $post['caption']['text'],
                 'html'  => $this->textToHtml($post['caption']['text']),
-                'image' => new Url($post['images']['standard_resolution']['url']),
-                'user'   => [
+                'image' => [
+                    'url'    => new Url($post['images']['standard_resolution']['url']),
+                    'width'  => $post['images']['standard_resolution']['width'],
+                    'height' => $post['images']['standard_resolution']['height'],
+                ],
+                'user'  => [
                     'id'       => $post['user']['id'],
                     'url'      => new Url("https://www.instagram.com/{$post['user']['username']}/"),
                     'name'     => $post['user']['full_name'],
                     'username' => $post['user']['username'],
                 ],
-                'source' => $post,
+                'native' => $post,
             ];
         }
 

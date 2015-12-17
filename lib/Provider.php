@@ -8,9 +8,84 @@ namespace Coast\Social;
 
 use Coast\Url;
 
-interface Provider
+abstract class Provider
 {
-    public function feed(array $params, array $extra = array());
+    public function feed(array $params)
+    {
+        $params = $params + [
+            'id'       => null,
+            'username' => null,
+            'limit'    => 10,
+            'native'   => [],
+        ];
 
-    public function stats(Url $url);
+        $feed = $this->_feed($params);
+        if ($feed == false) {
+            return false;
+        }
+
+        foreach ($feed as $i => $item) {
+            $feed[$i] = \Coast\array_merge_smart([
+                'id'       => null,
+                'url'      => null,
+                'date'     => null,
+                'text'     => null,
+                'html'     => null,
+                'image' => [
+                    'url'    => null,
+                    'width'  => null,
+                    'height' => null,
+                ],
+                'user' => [
+                    'id'       => null,
+                    'url'      => null,
+                    'name'     => null,
+                    'username' => null,
+                ],
+                'native' => null,
+            ], $item);
+        }
+
+        return $feed;
+    }
+
+    public function urlStats(Url $url)
+    {
+        $stats = $this->_urlStats($url);
+        if ($stats == false) {
+            return false;
+        }
+
+        $stats = \Coast\array_merge_smart([
+            'shares'   => null,
+            'comments' => null,
+        ], $stats);
+
+        return $stats;
+    }
+
+    protected function _feed(array $params)
+    {
+        return false;
+    }
+
+    protected function _urlStats(Url $url)
+    {
+        return false;
+    }
+
+    public function textToHtml($value)
+    {
+        $value = preg_replace("/(^|[\n ])([\w]*?)((ht|f)tp(s)?:\/\/[\w]+[^ \,\"\n\r\t<]*)/is", "$1$2<a href=\"$3\" target=\"_blank\">$3</a>", $value);
+        $value = preg_replace("/(^|[\n ])([\w]*?)((www|ftp)\.[^ \,\"\t\n\r<]*)/is", "$1$2<a href=\"http://$3\" target=\"_blank\">$3</a>", $value);
+        $value = preg_replace("/(^|[\n ])([a-z0-9&\-_\.]+?)@([\w\-]+\.([\w\-\.]+)+)/i", "$1<a href=\"mailto:$2@$3\" target=\"_blank\">$2@$3</a>", $value);
+
+        if (strlen($value) == 0) {
+            return null;
+        }
+
+        $value = preg_replace('/(\r\n?|\n)/', '<br>', $value);
+
+        return $value;
+    }
 }

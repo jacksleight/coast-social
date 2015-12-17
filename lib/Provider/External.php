@@ -10,10 +10,8 @@ use Coast\Social;
 use Coast\Social\Provider;
 use Coast\Url;
 
-abstract class External implements Provider
+abstract class External extends Provider
 {
-    protected $_name;
-
     protected $_credentials = [];
 
     protected $_api;
@@ -26,11 +24,6 @@ abstract class External implements Provider
             }
             $this->$name($value);
         }
-    }
-
-    public function name()
-    {
-        return $this->_name;
     }
 
     public function credentials($credentials = null)
@@ -82,71 +75,7 @@ abstract class External implements Provider
         }
     }
 
-    public function feed(array $params, array $extra = array())
-    {
-        $params = $params + [
-            'limit' => 10,
-        ];
-
-        $feed = $this->_feed($params, $extra);
-
-        foreach ($feed as $i => $item) {
-            $feed[$i] = \Coast\array_merge_smart([
-                'provider' => $this->_name,
-                'id'       => null,
-                'url'      => null,
-                'date'     => null,
-                'text'     => null,
-                'html'     => null,
-                'image'    => null,
-                'user' => [
-                    'id'       => null,
-                    'url'      => null,
-                    'name'     => null,
-                    'username' => null,
-                ],
-                'source' => null,
-            ], $item);
-        }
-
-        return $feed;
-    }
-
-    public function stats(Url $url)
-    {
-        $stats = $this->_stats($url);
-
-        return $stats;
-    }
-
     abstract protected function _api();
 
     abstract protected function _request($method, array $args = array());
-
-    protected function _feed(array $params, array $extra = array())
-    {
-        return false;
-    }
-
-    protected function _stats(Url $url)
-    {
-        return false;
-    }
-
-    public function textToHtml($text)
-    {
-        $text = preg_replace("/(^|[\n ])([\w]*?)((ht|f)tp(s)?:\/\/[\w]+[^ \,\"\n\r\t<]*)/is", "$1$2<a href=\"$3\" target=\"_blank\">$3</a>", $text);
-        $text = preg_replace("/(^|[\n ])([\w]*?)((www|ftp)\.[^ \,\"\t\n\r<]*)/is", "$1$2<a href=\"http://$3\" target=\"_blank\">$3</a>", $text);
-        $text = preg_replace("/(^|[\n ])([a-z0-9&\-_\.]+?)@([\w\-]+\.([\w\-\.]+)+)/i", "$1<a href=\"mailto:$2@$3\" target=\"_blank\">$2@$3</a>", $text);
-
-        if (strlen($text) == 0) {
-            return null;
-        }
-
-        $html = preg_split('/[(\r\n?|\n)]{2,}/is', $text);
-        $html = '<p>' . implode('</p><p>', $html) . '</p>';
-        $html = preg_replace('/(\r\n?|\n)/', '<br>', $html);
-
-        return $html;
-    }
 }

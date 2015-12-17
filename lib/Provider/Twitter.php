@@ -15,8 +15,6 @@ use TwitterAPIExchange;
 
 class Twitter extends External
 {
-    protected $_name = 'twitter';
-
     protected function _api()
     {
         return new TwitterAPIExchange([
@@ -45,11 +43,8 @@ class Twitter extends External
         return $res;
     }
 
-    protected function _feed(array $params, array $extra = array())
+    protected function _feed(array $params)
     {
-        $params = $params + [
-            'username' => null,
-        ];
         if (!isset($params['username'])) {
             throw new Social\Exception('No username specified');
         }
@@ -57,24 +52,38 @@ class Twitter extends External
         $data = $this->fetch('statuses/user_timeline', [
             'screen_name' => $params['username'],
             'count'       => $params['limit'],
-        ] + $extra);
+        ] + $params['native']);
 
         $feed = [];
         foreach ($data as $tweet) {
-            $feed[] = [
-                'id'     => $tweet['id_str'],
-                'url'    => new Url("https://twitter.com/{$tweet['user']['screen_name']}/status/{$tweet['id_str']}"),
-                'date'   => new Carbon($tweet['created_at']),
-                'text'   => $tweet['text'],
-                'html'   => $this->tweetToHtml($tweet),
-                'user'   => [
+            $item = [
+                'id'    => $tweet['id_str'],
+                'url'   => new Url("https://twitter.com/{$tweet['user']['screen_name']}/status/{$tweet['id_str']}"),
+                'date'  => new Carbon($tweet['created_at']),
+                'text'  => $tweet['text'],
+                'html'  => $this->tweetToHtml($tweet),
+                'image' => [],
+                'user' => [
                     'id'       => $tweet['user']['id_str'],
                     'url'      => new Url("https://twitter.com/{$tweet['user']['screen_name']}"),
                     'name'     => $tweet['user']['name'],
                     'username' => $tweet['user']['screen_name'],
                 ],
-                'source' => $tweet,
+                'native' => $tweet,
             ];
+            if (isset($tweet['entities']['media'])) {
+                foreach ($tweet['entities']['media'] as $media) {
+                    if ($media['type'] == 'photo') {
+                        $item['image'] = [
+                            'url'    => new Url($media['media_url_https']),
+                            'width'  => $media['sizes']['large']['w'],
+                            'height' => $media['sizes']['large']['h'],
+                        ];
+                        break;
+                    }
+                }
+            }
+            $feed[] = $item;
         }
 
         return $feed;

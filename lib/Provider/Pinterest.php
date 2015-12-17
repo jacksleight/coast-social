@@ -16,8 +16,6 @@ use DirkGroenen\Pinterest\Pinterest as PinterestApi;
 
 class Pinterest extends External
 {
-    protected $_name = 'pinterest';
-
     protected function _api()
     {
         $api = new PinterestApi(
@@ -54,30 +52,16 @@ class Pinterest extends External
         return $res;
     }
 
-    protected function _feed(array $params, array $extra = array())
+    protected function _feed(array $params)
     {
-        // $data = $this->fetch('users/search', [$params['username']], null);
-        // foreach ($data->data as $user) {
-        //     if ($user['username'] == $params['username']) {
-        //         $userId = $user['id'];
-        //         break;
-        //     }
-        // }
-        // if (!isset($userId)) {
-        //     throw new Social\Exception("User '{$params['username']}' does not exist");
-        // }
-
-        $params = $params + [
-            'boardId' => null,
-        ];
-        if (!isset($params['boardId'])) {
-            throw new Social\Exception('No board ID specified');
+        if (!isset($params['id'])) {
+            throw new Social\Exception('No ID specified');
         }
 
         $data = $this->fetch('pins/fromBoard', [$params['boardId'], [
             'fields' => 'id,link,url,creator(id,username,first_name,last_name,bio,created_at,counts,image,url),board,created_at,note,color,counts,media,attribution,image,metadata',
             'limit'  => $params['limit'],
-        ] + $extra]);
+        ] + $params['native']]);
 
         $feed = [];
         foreach ($data as $pin) {
@@ -87,14 +71,18 @@ class Pinterest extends External
                 'date'  => new Carbon($pin->created_at),
                 'text'  => $pin->note,
                 'html'  => $this->textToHtml($pin->note),
-                'image' => new Url($pin->image['original']['url']),
+                'image' => [
+                    'url'    => new Url($pin->image['original']['url']),
+                    'width'  => $pin->image['original']['width'],
+                    'height' => $pin->image['original']['height'],
+                ],
                 'user'  => [
                     'id'       => $pin->creator['id'],
                     'url'      => new Url($pin->creator['url']),
                     'name'     => "{$pin->creator['first_name']} {$pin->creator['last_name']}",
                     'username' => $pin->creator['username'],
                 ],
-                'source' => $pin,
+                'native' => $pin,
             ];
         }
 
@@ -109,7 +97,7 @@ class Pinterest extends External
         return parent::textToHtml($text);
     }
 
-    protected function _stats(Url $url)
+    protected function _urlStats(Url $url)
     {
         $data = $this->fetch('urls/count', [
             'url' => $url->toString(),

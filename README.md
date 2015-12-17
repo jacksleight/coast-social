@@ -2,16 +2,53 @@
 
 Coast component for accessing social media APIs. It can retrieve latest feeds and URL statistics from various social media platforms in a standardised format.
 
-## Supported Platforms & Methods
+## Supported Platforms, Methods & Attributes
 
-           | Feed | Stats (URL)
------------| -----|--------
-Facebook   | Yes  | Shares, Comments
-Twitter    | Yes  | ~~Shares~~
-Instagram  | Yes  | –
-Pinterest  | Yes  | Shares
+:black_circle: = Supported  
+:white_circle: = Supported where applicable
 
-Twitter share counts are not available as there's currently no API to access that data: https://blog.twitter.com/2015/hard-decisions-for-a-sustainable-platform)
+Method        | Facebook       | Twitter        | Instagram      | Pinterest
+--------------| ---------------|----------------|----------------|---------------
+feed          | :black_circle: | :black_circle: | :black_circle: | :black_circle:
+urlStats      | :black_circle: |                |                | :black_circle:
+
+#### feed
+
+###### Input
+
+Parameter     | Default | Facebook       | Twitter        | Instagram      | Pinterest
+--------------| --------|----------------|----------------|----------------|---------------
+username      |         | :black_circle: | :black_circle: | :black_circle: | 
+id            |         | :black_circle: |                | :black_circle: | :black_circle:
+limit         | 10      | :black_circle: | :black_circle: | :black_circle: | :black_circle:
+native        |         | :black_circle: | :black_circle: | :black_circle: | :black_circle:
+
+###### Output
+
+Attribute     | Facebook       | Twitter        | Instagram      | Pinterest
+--------------| ---------------|----------------|----------------|---------------
+id            | :black_circle: | :black_circle: | :black_circle: | :black_circle: 
+url           | :black_circle: | :black_circle: | :black_circle: | :black_circle:
+date          | :black_circle: | :black_circle: | :black_circle: | :black_circle:
+text          | :black_circle: | :black_circle: | :black_circle: | :black_circle:
+html          | :black_circle: | :black_circle: | :black_circle: | :black_circle:
+image.url     | :white_circle: | :white_circle: | :black_circle: | :black_circle: 
+image.width   |                | :white_circle: | :black_circle: | :black_circle: 
+image.height  |                | :white_circle: | :black_circle: | :black_circle: 
+user.id       | :black_circle: | :black_circle: | :black_circle: | :black_circle:
+user.url      | :black_circle: | :black_circle: | :black_circle: | :black_circle:
+user.name     | :black_circle: | :black_circle: | :black_circle: | :black_circle:
+user.username | :white_circle: | :black_circle: | :black_circle: | :black_circle:
+native        | :black_circle: | :black_circle: | :black_circle: | :black_circle:
+
+#### urlStats
+
+###### Output
+
+Stat          | Facebook       | Twitter        | Instagram      | Pinterest
+--------------| ---------------|----------------|----------------|---------------
+shares        | :black_circle: |                |                | :black_circle: 
+comments      | :black_circle: |                |                | 
 
 ## Installation
 
@@ -44,8 +81,8 @@ $provider = new Coast\Social\Provider\Facebook([
     ],
 ]);
 $feed = $provider->feed([
-    'objectId' => '',
-    'limit'    => 10,
+    'id'       => '', // Object ID
+    'username' => '', // User/page username
 ]);
 $stats = $provider->stats(new Coast\Url('http://www.example.com/'));
 ```
@@ -63,7 +100,6 @@ $provider = new Coast\Social\Provider\Twitter([
 ]);
 $feed = $provider->feed([
     'username' => '',
-    'limit'    => 10,
 ]);
 ```
 
@@ -76,9 +112,8 @@ $provider = new Coast\Social\Provider\Instagram([
     ],
 ]);
 $feed = $provider->feed([
-    'username' => '', // or…
-    'userId'   => '',
-    'limit'    => 10,
+    'id'       => '', // User ID
+    'username' => '',
 ]);
 ```
 
@@ -93,8 +128,7 @@ $provider = new Coast\Social\Provider\Pinterest([
     ],
 ]);
 $feed = $provider->feed([
-    'boardId' => '',
-    'limit'   => 10,
+    'id'      => '', // Board ID
 ]);
 $stats = $provider->stats(new Coast\Url('http://www.example.com/'));
 ```
