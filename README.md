@@ -18,10 +18,12 @@ urlStats      | :black_circle: |                |                | :black_circle
 
 Parameter     | Default | Facebook       | Twitter        | Instagram      | Pinterest
 --------------| --------|----------------|----------------|----------------|---------------
-username      |         | :black_circle: | :black_circle: | :black_circle: | 
 id            |         | :black_circle: |                | :black_circle: | :black_circle:
+username      |         | :black_circle: | :black_circle: | :black_circle: | 
 limit         | 10      | :black_circle: | :black_circle: | :black_circle: | :black_circle:
-native        |         | :black_circle: | :black_circle: | :black_circle: | :black_circle:
+native        | []      | :black_circle: | :black_circle: | :black_circle: | :black_circle:
+
+* The native parameter allows you to parse additional parameters to each providers API, refer to the relevant API documentation for more information.
 
 ###### Output
 
@@ -40,6 +42,8 @@ user.url      | :black_circle: | :black_circle: | :black_circle: | :black_circle
 user.name     | :black_circle: | :black_circle: | :black_circle: | :black_circle:
 user.username | :white_circle: | :black_circle: | :black_circle: | :black_circle:
 native        | :black_circle: | :black_circle: | :black_circle: | :black_circle:
+
+* The native parameter contains the unmodified source from the API response.
 
 #### urlStats
 
@@ -81,7 +85,7 @@ $provider = new Coast\Social\Provider\Facebook([
     ],
 ]);
 $feed = $provider->feed([
-    'id'       => '', // Object ID
+    'id'       => '', // User/page ID
     'username' => '', // User/page username
 ]);
 $stats = $provider->stats(new Coast\Url('http://www.example.com/'));
