@@ -11,7 +11,6 @@ use Coast\Social;
 use Coast\Url;
 use Coast\Social\Provider;
 use Coast\Social\Provider\External;
-use Instaphp\Instaphp;
 
 class Instagram extends External
 {

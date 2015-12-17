@@ -12,7 +12,6 @@ use Coast\Url;
 use Coast\Http;
 use Coast\Social\Provider;
 use Coast\Social\Provider\External;
-use DirkGroenen\Pinterest\Pinterest as PinterestApi;
 
 class Pinterest extends External
 {
@@ -20,6 +19,13 @@ class Pinterest extends External
 
     protected function _request($method, array $params = array())
     {
+        $jsonMethods = [
+            'urls/count'
+        ];
+        if (in_array($method, $jsonMethods)) {
+            $method .= '.json';
+        }
+
         $url = (new Url("{$this->_endpoint}{$method}"))->queryParams([
             'access_token' => $this->_credentials['accessToken'],
         ] + $params);
@@ -94,7 +100,7 @@ class Pinterest extends External
 
     protected function _urlStats(Url $url)
     {
-        $data = $this->fetch('urls/count.json', [
+        $data = $this->fetch('urls/count', [
             'url' => $url->toString(),
         ]);
 

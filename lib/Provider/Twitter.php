@@ -11,33 +11,72 @@ use Coast\Social;
 use Coast\Url;
 use Coast\Social\Provider;
 use Coast\Social\Provider\External;
-use TwitterAPIExchange;
 
 class Twitter extends External
 {
+    protected $_endpoint = 'https://api.twitter.com/1.1/';
+
     protected function _request($method, array $params = array())
     {
-        $api = new TwitterAPIExchange([
-            'consumer_key'              => $this->_credentials['consumerKey'],
-            'consumer_secret'           => $this->_credentials['consumerSecret'],
-            'oauth_access_token'        => $this->_credentials['accessToken'],
-            'oauth_access_token_secret' => $this->_credentials['accessTokenSecret']
-        ]);
+        $url = new Url("{$this->_endpoint}{$method}.json");
+        $headers = ["Authorization: " . $this->_authHeader($url, $params)];
+        $url->queryParams($params);
 
-        $res = $api
-            ->setGetfield('?' . http_build_query($params))
-            ->buildOauth("https://api.twitter.com/1.1/{$method}.json", 'GET')
-            ->performRequest();
-
-        $res = json_decode($res, true);
-        if (!$res) {
-            throw new Social\Exception('Received invalid response data');
+        $res = $this->_http->get($url, null, $headers);
+        if (strpos($res->header('content-type'), 'application/json') === false) {
+            throw new Social\Exception('Non JSON response');
         }
-        if (isset($res['errors'])) {
-            throw new Social\Exception($res['errors'][0]['message']);
+        $data = $res->json();
+        if ($data === false) {
+            throw new Social\Exception('Malformed JSON response');
+        }
+        if (!$res->isSuccess() || isset($data['errors'])) {
+            throw new Social\Exception($data['errors'][0]['message']);
         }
 
-        return $res;
+        return $data;
+    }
+
+    protected function _authHeader(Url $url, $params = array())
+    {
+        $oauth = [
+            'oauth_consumer_key'     => $this->_credentials['consumerKey'],
+            'oauth_nonce'            => time(),
+            'oauth_signature_method' => 'HMAC-SHA1',
+            'oauth_token'            => $this->_credentials['oauthAccessToken'],
+            'oauth_timestamp'        => time(),
+            'oauth_version'          => '1.0'
+        ];
+
+        $compositeKey =
+            rawurlencode($this->_credentials['consumerSecret']) . '&' .
+            rawurlencode($this->_credentials['oauthAccessTokenSecret']);
+        
+        $signatureParams = $oauth + $params;        
+        ksort($signatureParams);
+        $string = [];
+        foreach($signatureParams as $name => $value) {
+            $string[] = 
+                rawurlencode($name) . '=' .
+                rawurlencode($value);
+        }
+
+        $signatureData =
+            'GET' . "&" .
+            rawurlencode($url->toString()) . '&' .
+            rawurlencode(implode('&', $string));
+
+        $signature = hash_hmac('sha1', $signatureData, $compositeKey, true);
+        $signature = base64_encode($signature);
+        $oauth['oauth_signature'] = $signature;
+        
+        $header = [];
+        foreach($oauth as $name => $value) {
+            $header[] = $name . '="' . rawurlencode($value) . '"';
+        }
+        $header = 'OAuth ' . implode(', ', $header);
+
+        return $header;
     }
 
     protected function _feed(array $params)
