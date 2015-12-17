@@ -15,20 +15,17 @@ use TwitterAPIExchange;
 
 class Twitter extends External
 {
-    protected function _api()
+    protected function _request($method, array $params = array())
     {
-        return new TwitterAPIExchange([
+        $api = new TwitterAPIExchange([
             'consumer_key'              => $this->_credentials['consumerKey'],
             'consumer_secret'           => $this->_credentials['consumerSecret'],
             'oauth_access_token'        => $this->_credentials['accessToken'],
             'oauth_access_token_secret' => $this->_credentials['accessTokenSecret']
         ]);
-    }
 
-    protected function _request($method, array $args = array())
-    {
-        $res = $this->api()
-            ->setGetfield('?' . http_build_query($args))
+        $res = $api
+            ->setGetfield('?' . http_build_query($params))
             ->buildOauth("https://api.twitter.com/1.1/{$method}.json", 'GET')
             ->performRequest();
 

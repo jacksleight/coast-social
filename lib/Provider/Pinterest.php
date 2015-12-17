@@ -16,21 +16,17 @@ use DirkGroenen\Pinterest\Pinterest as PinterestApi;
 
 class Pinterest extends External
 {
-    protected function _api()
+    protected function _request($method, array $params = array())
     {
         $api = new PinterestApi(
             $this->_credentials['appId'],
             $this->_credentials['appSecret']
         );
         $api->auth->setOAuthToken($this->_credentials['accessToken']);
-        return $api;
-    }
 
-    protected function _request($method, array $args = array())
-    {
         if ($method == 'urls/count') {
             $url = (new Url('https://api.pinterest.com/v1/urls/count.json'))
-                ->queryParams($args);
+                ->queryParams($params);
             $http = new Http();
             $res  = $http->get(new Url($url));
             if (!$res->isSuccess()) {
@@ -43,12 +39,12 @@ class Pinterest extends External
 
         $parts  = explode('/', $method);
         $method = array_pop($parts);
-        $object = $this->api();
+        $object = $api;
         foreach ($parts as $part) {
             $object = $object->{$part};
         }
 
-        $res = call_user_func_array([$object, $method], $args);
+        $res = call_user_func_array([$object, $method], $params);
         return $res;
     }
 

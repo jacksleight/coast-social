@@ -15,8 +15,6 @@ abstract class External extends Provider
 {
     protected $_credentials = [];
 
-    protected $_api;
-
     protected $_http;
 
     protected $_endpoint;
@@ -36,13 +34,13 @@ abstract class External extends Provider
         return $this->_credentials;
     }
 
-    public function fetch($method, array $args = array(), $lifetime = 3600)
+    public function fetch($method, array $params = array(), $lifetime = 3600)
     {
         $key = md5(
             get_class($this) .
             serialize($this->_credentials) .
             $method .
-            serialize($args)
+            serialize($params)
         );
 
         $cache = new \Memcached();
@@ -50,7 +48,7 @@ abstract class External extends Provider
 
         $data = $cache->get($key);
         if ($data === false) {
-            $data = $this->request($method, $args);
+            $data = $this->request($method, $params);
             $cache->set($key, $data, $lifetime);
         }
 
@@ -65,10 +63,10 @@ abstract class External extends Provider
         return $this->_api;
     }
 
-    public function request($method, array $args = array())
+    public function request($method, array $params = array())
     {
         try {
-            return $this->_request($method, $args);
+            return $this->_request($method, $params);
         } catch (Social\Exception $e) {
             throw $e;
         } catch (\Exception $e) {

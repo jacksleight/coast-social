@@ -14,18 +14,15 @@ use Facebook\Facebook as FacebookApi;
 
 class Facebook extends External
 {
-    protected function _api()
+    protected function _request($method, array $params = array())
     {
-        return new FacebookApi([
+        $api = new FacebookApi([
             'app_id'     => $this->_credentials['appId'],
             'app_secret' => $this->_credentials['appSecret'],
         ]);
-    }
 
-    protected function _request($method, array $args = array())
-    {
-        $res = $this->api()->get(
-            "/{$method}?" . http_build_query($args),
+        $res = $api->get(
+            "/{$method}?" . http_build_query($params),
             $this->_credentials['accessToken']
         );
         return $res->getDecodedBody();
