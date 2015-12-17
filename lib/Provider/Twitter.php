@@ -39,42 +39,41 @@ class Twitter extends External
 
     protected function _authHeader(Url $url, $params = array())
     {
-        $oauth = [
+        $oauthParams = [
             'oauth_consumer_key'     => $this->_credentials['consumerKey'],
             'oauth_nonce'            => time(),
             'oauth_signature_method' => 'HMAC-SHA1',
-            'oauth_token'            => $this->_credentials['oauthAccessToken'],
             'oauth_timestamp'        => time(),
+            'oauth_token'            => $this->_credentials['oauthAccessToken'],
             'oauth_version'          => '1.0'
         ];
-
-        $compositeKey =
+        $compositeSecret =
             rawurlencode($this->_credentials['consumerSecret']) . '&' .
             rawurlencode($this->_credentials['oauthAccessTokenSecret']);
         
-        $signatureParams = $oauth + $params;        
+        $signatureParams = $oauthParams + $params;
         ksort($signatureParams);
-        $string = [];
+        $signatureParts = [];
         foreach($signatureParams as $name => $value) {
-            $string[] = 
+            $signatureParts[] = 
                 rawurlencode($name) . '=' .
                 rawurlencode($value);
         }
 
         $signatureData =
-            'GET' . "&" .
+            'GET&' .
             rawurlencode($url->toString()) . '&' .
-            rawurlencode(implode('&', $string));
+            rawurlencode(implode('&', $signatureParts));
 
-        $signature = hash_hmac('sha1', $signatureData, $compositeKey, true);
+        $signature = hash_hmac('sha1', $signatureData, $compositeSecret, true);
         $signature = base64_encode($signature);
-        $oauth['oauth_signature'] = $signature;
+        $oauthParams['oauth_signature'] = $signature;
         
-        $header = [];
-        foreach($oauth as $name => $value) {
-            $header[] = $name . '="' . rawurlencode($value) . '"';
+        $headerParts = [];
+        foreach($oauthParams as $name => $value) {
+            $headerParts[] = $name . '="' . rawurlencode($value) . '"';
         }
-        $header = 'OAuth ' . implode(', ', $header);
+        $header = 'OAuth ' . implode(', ', $headerParts);
 
         return $header;
     }

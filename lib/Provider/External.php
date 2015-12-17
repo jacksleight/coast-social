@@ -47,10 +47,10 @@ abstract class External extends Provider
         $cache->addServer('localhost', 11211);
 
         $data = $cache->get($key);
-        // if ($data === false) {
+        if ($data === false) {
             $data = $this->request($method, $params);
             $cache->set($key, $data, $lifetime);
-        // }
+        }
 
         return $data;
     }
