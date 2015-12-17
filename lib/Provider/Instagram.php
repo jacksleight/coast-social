@@ -15,28 +15,27 @@ use Instaphp\Instaphp;
 
 class Instagram extends External
 {
-    protected function _api()
+    protected $_endpoint = 'https://api.instagram.com/v1/';
+
+    protected function _request($method, array $params = array())
     {
-        return new Instaphp([
+        $url = (new Url("{$this->_endpoint}{$method}"))->queryParams([
             'client_id' => $this->_credentials['clientId'],
-        ]);
-    }
-
-    protected function _request($method, array $args = array())
-    {
-        $parts  = explode('/', $method);
-        $method = array_pop($parts);
-        $object = $this->api();
-        foreach ($parts as $part) {
-            $object = $object->{$part};
+        ] + $params);
+           
+        $res = $this->_http->get($url);
+        if (!$res->isSuccess() && $res->header('content-type') == 'text/html') {
+            throw new Social\Exception($res->status());
+        }
+        $data = $res->json();
+        if ($data === false) {
+            throw new Social\Exception('Malformed JSON response');
+        }
+        if ($data['meta']['code'] != 200) {
+            throw new Social\Exception($data['meta']['error_message']);
         }
 
-        $res = call_user_func_array([$object, $method], $args);
-        if (!isset($res->data)) {
-            throw new Social\Exception('Received invalid response data');
-        }
-
-        return $res;
+        return $data['data'];
     }
 
     protected function _feed(array $params)
@@ -46,8 +45,10 @@ class Instagram extends External
         }
 
         if (!isset($params['id'])) {
-            $data = $this->fetch('users/search', [$params['username']], null);
-            foreach ($data->data as $user) {
+            $data = $this->fetch("users/search", [
+                'q' => $params['username'],
+            ], null);
+            foreach ($data as $user) {
                 if ($user['username'] == $params['username']) {
                     $params['id'] = $user['id'];
                     break;
@@ -58,12 +59,12 @@ class Instagram extends External
             }
         }
 
-        $data = $this->fetch('users/recent', [$params['id'], [
+        $data = $this->fetch("users/{$params['id']}/media/recent", [
             'count' => $params['limit'],
-        ] + $params['native']]);
+        ] + $params['native']);
 
         $feed = [];
-        foreach ($data->data as $post) {
+        foreach ($data as $post) {
             $feed[] = [
                 'id'    => $post['id'],
                 'url'   => new Url($post['link']),

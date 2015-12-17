@@ -9,12 +9,23 @@ namespace Coast\Social\Provider;
 use Coast\Social;
 use Coast\Social\Provider;
 use Coast\Url;
+use Coast\Http;
 
 abstract class External extends Provider
 {
     protected $_credentials = [];
 
     protected $_api;
+
+    protected $_http;
+
+    protected $_endpoint;
+
+    public function __construct(array $options = array())
+    {
+        parent::__construct($options);
+        $this->_http = new Http();
+    }
 
     public function credentials($credentials = null)
     {
@@ -65,7 +76,5 @@ abstract class External extends Provider
         }
     }
 
-    abstract protected function _api();
-
-    abstract protected function _request($method, array $args = array());
+    abstract protected function _request($method, array $params = array());
 }
