@@ -47,6 +47,10 @@ native        | :black_circle: | :black_circle: | :black_circle: | :black_circle
 
 #### urlStats
 
+###### Input
+
+A `Coast\Url` object.
+
 ###### Output
 
 Stat          | Facebook       | Twitter        | Instagram      | Pinterest
