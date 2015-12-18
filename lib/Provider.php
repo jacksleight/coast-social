@@ -7,6 +7,7 @@
 namespace Coast\Social;
 
 use Coast\Url;
+use Carbon\Carbon;
 
 abstract class Provider
 {
@@ -35,6 +36,9 @@ abstract class Provider
         }
 
         foreach ($feed as $i => $item) {
+            if (class_exists('Carbon\Carbon')) {
+                $item['date'] = Carbon::instance($item['date']);
+            }
             $feed[$i] = \Coast\array_merge_smart([
                 'id'       => null,
                 'url'      => null,

@@ -6,7 +6,7 @@
 
 namespace Coast\Social\Provider;
 
-use Carbon\Carbon;
+use DateTime;
 use Coast\Social;
 use Coast\Url;
 use Coast\Social\Provider;
@@ -67,7 +67,7 @@ class Instagram extends External
             $feed[] = [
                 'id'    => $post['id'],
                 'url'   => new Url($post['link']),
-                'date'  => new Carbon("@{$post['created_time']}"),
+                'date'  => new DateTime("@{$post['created_time']}"),
                 'text'  => $post['caption']['text'],
                 'html'  => $this->textToHtml($post['caption']['text']),
                 'image' => [

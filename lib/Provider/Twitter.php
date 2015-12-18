@@ -6,7 +6,7 @@
 
 namespace Coast\Social\Provider;
 
-use Carbon\Carbon;
+use DateTime;
 use Coast\Social;
 use Coast\Url;
 use Coast\Social\Provider;
@@ -19,7 +19,7 @@ class Twitter extends External
     protected function _request($method, array $params = array())
     {
         $url = new Url("{$this->_endpoint}{$method}.json");
-        $headers = ["Authorization: " . $this->_authHeader($url, $params)];
+        $headers = ["Authorization: " . $this->_oauthHeader($url, $params)];
         $url->queryParams($params);
 
         $res = $this->_http->get($url, null, $headers);
@@ -37,7 +37,7 @@ class Twitter extends External
         return $data;
     }
 
-    protected function _authHeader(Url $url, $params = array())
+    protected function _oauthHeader(Url $url, $params = array())
     {
         $oauthParams = [
             'oauth_consumer_key'     => $this->_credentials['consumerKey'],
@@ -94,7 +94,7 @@ class Twitter extends External
             $item = [
                 'id'    => $tweet['id_str'],
                 'url'   => new Url("https://twitter.com/{$tweet['user']['screen_name']}/status/{$tweet['id_str']}"),
-                'date'  => new Carbon($tweet['created_at']),
+                'date'  => new DateTime($tweet['created_at']),
                 'text'  => $tweet['text'],
                 'html'  => $this->tweetToHtml($tweet),
                 'image' => [],

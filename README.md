@@ -4,8 +4,8 @@ Coast Social can retrieve latest post feeds and URL statistics from various soci
 
 ## What's Supported?
 
-:black_circle: = Supported  
-:white_circle: = Supported where applicable
+:black_circle: = Supported, always present
+:white_circle: = Supported, when present
 
 Method        | Facebook       | Twitter        | Instagram      | Pinterest
 --------------| ---------------|----------------|----------------|---------------
@@ -81,24 +81,24 @@ composer.phar install
 #### Facebook
 
 ```php
-$provider = new Coast\Social\Provider\Facebook([
+$facebook = new Coast\Social\Provider\Facebook([
     'credentials' => [
         'appId'       => '',
         'appSecret'   => '',
         'accessToken' => '', // Get from https://developers.facebook.com/tools/explorer/
     ],
 ]);
-$feed = $provider->feed([
+$feed = $facebook->feed([
     'id'       => '', // User/page ID
     'username' => '', // User/page username
 ]);
-$stats = $provider->stats(new Coast\Url('http://www.example.com/'));
+$stats = $facebook->stats(new Coast\Url('http://www.example.com/'));
 ```
 
 #### Twitter
 
 ```php
-$provider = new Coast\Social\Provider\Twitter([
+$twitter = new Coast\Social\Provider\Twitter([
     'credentials' => [
         'consumerKey'       => '',
         'consumerSecret'    => '',
@@ -106,7 +106,7 @@ $provider = new Coast\Social\Provider\Twitter([
         'accessTokenSecret' => '',
     ],
 ]);
-$feed = $provider->feed([
+$feed = $twitter->feed([
     'username' => '',
 ]);
 ```
@@ -114,12 +114,12 @@ $feed = $provider->feed([
 #### Instagram
 
 ```php
-$provider = new Coast\Social\Provider\Instagram([
+$instagram = new Coast\Social\Provider\Instagram([
     'credentials' => [
         'clientId' => '',
     ],
 ]);
-$feed = $provider->feed([
+$feed = $instagram->feed([
     'id'       => '', // User ID
     'username' => '',
 ]);
@@ -128,17 +128,17 @@ $feed = $provider->feed([
 #### Pinterest
 
 ```php
-$provider = new Coast\Social\Provider\Pinterest([
+$pinterest = new Coast\Social\Provider\Pinterest([
     'credentials' => [
         'appId'       => '',
         'appSecret'   => '',
         'accessToken' => '', // Get from https://developers.pinterest.com/tools/access_token/
     ],
 ]);
-$feed = $provider->feed([
+$feed = $pinterest->feed([
     'id'      => '', // Board ID
 ]);
-$stats = $provider->stats(new Coast\Url('http://www.example.com/'));
+$stats = $pinterest->stats(new Coast\Url('http://www.example.com/'));
 ```
 
 ## Licence

@@ -6,7 +6,7 @@
 
 namespace Coast\Social\Provider;
 
-use Carbon\Carbon;
+use DateTime;
 use Coast\Social;
 use Coast\Url;
 use Coast\Http;
@@ -69,7 +69,7 @@ class Pinterest extends External
             $feed[] = [
                 'id'    => $pin['id'],
                 'url'   => new Url($pin['url']),
-                'date'  => new Carbon($pin['created_at']),
+                'date'  => new DateTime($pin['created_at']),
                 'text'  => $pin['note'],
                 'html'  => $this->textToHtml($pin['note']),
                 'image' => [

@@ -6,7 +6,6 @@
 
 namespace Coast\Social;
 
-use Carbon\Carbon;
 use Coast\Url;
 use Coast\Social\Provider;
 
