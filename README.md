@@ -158,7 +158,7 @@ $feed = $social->feed([ // Feeds from all providers
         'id' => '',
     ],
 ]);
-$feed = $social->feedFlat([ // Feeds from all providers merged and posts ordered by date
+$feed = $social->feedFlat([ // Feeds from all providers merged and ordered by date
     'twitter'  => [
         'username' => '',
     ],
