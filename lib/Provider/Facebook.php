@@ -6,26 +6,35 @@
 
 namespace Coast\Social\Provider;
 
-use Carbon\Carbon;
+use DateTime;
 use Coast\Url;
+use Coast\Social;
 use Coast\Social\Provider;
 use Coast\Social\Provider\External;
-use Facebook\Facebook as FacebookApi;
 
 class Facebook extends External
 {
+    protected $_endpoint = 'https://graph.facebook.com/v2.5/';
+
     protected function _request($method, array $params = array())
     {
-        $api = new FacebookApi([
-            'app_id'     => $this->_credentials['appId'],
-            'app_secret' => $this->_credentials['appSecret'],
-        ]);
+        $url = (new Url("{$this->_endpoint}{$method}"))->queryParams([
+            'access_token' => $this->_credentials['accessToken'],
+        ] + $params);
+           
+        $res = $this->_http->get($url);
+        if (strpos($res->header('content-type'), 'application/json') === false) {
+            throw new Social\Exception('Non JSON response');
+        }
+        $data = $res->json();
+        if ($data === false) {
+            throw new Social\Exception('Malformed JSON response');
+        }
+        if (!$res->isSuccess() || isset($data['error'])) {
+            throw new Social\Exception($data['error']['message']);
+        }
 
-        $res = $api->get(
-            "/{$method}?" . http_build_query($params),
-            $this->_credentials['accessToken']
-        );
-        return $res->getDecodedBody();
+        return $data['data'];
     }
 
     protected function _feed(array $params)
@@ -43,7 +52,7 @@ class Facebook extends External
         ] + $params['native']);
 
         $feed = [];
-        foreach ($data['data'] as $post) {
+        foreach ($data as $post) {
             if (isset($post['from']['username'])) {
                 $identifier = $post['from']['username'];
                 $username   = $post['from']['username'];
@@ -57,7 +66,7 @@ class Facebook extends External
             $feed[] = [
                 'id'    => $post['id'],
                 'url'   => new Url("https://www.facebook.com/{$identifier}/posts/" . substr($post['id'], strpos($post['id'], '_') + 1)),
-                'date'  => new Carbon($post['created_time']),
+                'date'  => new DateTime($post['created_time']),
                 'text'  => $text,
                 'html'  => $this->textToHtml($text),
                 'image' => [
