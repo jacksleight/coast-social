@@ -4,7 +4,7 @@ Coast Social can retrieve latest post feeds and URL statistics from various soci
 
 ## What's Supported?
 
-:black_circle: = Supported, always present
+:black_circle: = Supported, always present  
 :white_circle: = Supported, when present
 
 Method        | Facebook       | Twitter        | Instagram      | Pinterest
@@ -139,6 +139,35 @@ $feed = $pinterest->feed([
     'id'      => '', // Board ID
 ]);
 $stats = $pinterest->stats(new Coast\Url('http://www.example.com/'));
+```
+
+#### Aggregate
+
+```php
+$social = new Coast\Social([
+    'providers' => [
+        'twitter'  => $twitter,
+        'facebook' => $facebook,
+    ],
+]);
+$feed = $social->feed([ // Feeds from all providers
+    'twitter'  => [
+        'username' => '',
+    ],
+    'facebook' => [
+        'id' => '',
+    ],
+]);
+$feed = $social->feedFlat([ // Feeds from all providers merged and posts ordered by date
+    'twitter'  => [
+        'username' => '',
+    ],
+    'facebook' => [
+        'id' => '',
+    ],
+]);
+$stats = $social->stats(new Coast\Url('http://www.example.com/'));     // Stats from all providers
+$stats = $social->statsFlat(new Coast\Url('http://www.example.com/')); // Stats from all providers added together
 ```
 
 ## Licence
