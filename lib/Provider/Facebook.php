@@ -47,25 +47,18 @@ class Facebook extends External
             ? $params['id']
             : $params['username'];
         $data = $this->fetch("{$id}/feed", [
-            'fields' => 'id,created_time,name,caption,description,link,picture,properties,type,from{id,username,name},message',
+            'fields' => 'id,created_time,name,caption,description,link,picture,properties,type,from{id,name},message',
             'limit'  => $params['limit'],
         ] + $params['native']);
 
         $feed = [];
         foreach ($data as $post) {
-            if (isset($post['from']['username'])) {
-                $identifier = $post['from']['username'];
-                $username   = $post['from']['username'];
-            } else {
-                $identifier = $post['from']['id'];
-                $username   = null;                
-            }
             $text = isset($post['message'])
                 ? $post['message']
                 : null;
             $feed[] = [
                 'id'    => $post['id'],
-                'url'   => new Url("https://www.facebook.com/{$identifier}/posts/" . substr($post['id'], strpos($post['id'], '_') + 1)),
+                'url'   => new Url("https://www.facebook.com/{$post['from']['id']}/posts/" . substr($post['id'], strpos($post['id'], '_') + 1)),
                 'date'  => new DateTime($post['created_time']),
                 'text'  => $text,
                 'html'  => $this->textToHtml($text),
@@ -74,9 +67,8 @@ class Facebook extends External
                 ],
                 'user'  => [
                     'id'       => $post['from']['id'],
-                    'url'      => new Url("https://www.facebook.com/{$identifier}"),
+                    'url'      => new Url("https://www.facebook.com/{$post['from']['id']}"),
                     'name'     => $post['from']['name'],
-                    'username' => $username,
                 ],
                 'native' => $post,
             ];

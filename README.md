@@ -40,7 +40,7 @@ image.height  |                | :white_circle: | :black_circle: | :black_circle
 user.id       | :black_circle: | :black_circle: | :black_circle: | :black_circle:
 user.url      | :black_circle: | :black_circle: | :black_circle: | :black_circle:
 user.name     | :black_circle: | :black_circle: | :black_circle: | :black_circle:
-user.username | :white_circle: | :black_circle: | :black_circle: | :black_circle:
+user.username |                | :black_circle: | :black_circle: | :black_circle:
 native        | :black_circle: | :black_circle: | :black_circle: | :black_circle:
 
 * The native parameter contains the unmodified source from the API response.
