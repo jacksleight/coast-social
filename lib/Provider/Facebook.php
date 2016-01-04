@@ -34,7 +34,7 @@ class Facebook extends External
             throw new Social\Exception($data['error']['message']);
         }
 
-        return $data['data'];
+        return $data;
     }
 
     protected function _feed(array $params)
@@ -52,7 +52,7 @@ class Facebook extends External
         ] + $params['native']);
 
         $feed = [];
-        foreach ($data as $post) {
+        foreach ($data['data'] as $post) {
             $text = isset($post['message'])
                 ? $post['message']
                 : null;
