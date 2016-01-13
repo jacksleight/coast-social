@@ -11,6 +11,7 @@ use Coast\Social;
 use Coast\Url;
 use Coast\Social\Provider;
 use Coast\Social\Provider\External;
+use Coast\Http;
 
 class Instagram extends External
 {
@@ -18,15 +19,17 @@ class Instagram extends External
 
     protected function _request($method, array $params = array())
     {
-        $url = (new Url("{$this->_endpoint}{$method}"))->queryParams([
-            'client_id' => $this->_credentials['clientId'],
-        ] + $params);
-           
-        $res = $this->_http->get($url);
-        if (strpos($res->header('content-type'), 'application/json') === false) {
+        $req = new Http\Request([
+            'url' => (new Url("{$this->_endpoint}{$method}"))->queryParams([
+                'client_id' => $this->_credentials['clientId'],
+            ] + $params),
+        ]);
+        $res = $this->_http->execute($req);
+        
+        if (!$res->isJson()) {
             throw new Social\Exception('Non JSON response');
         }
-        $data = $res->json();
+        $data = $res->json(true);
         if ($data === false) {
             throw new Social\Exception('Malformed JSON response');
         }

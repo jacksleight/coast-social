@@ -9,7 +9,7 @@ namespace Coast\Social\Provider;
 use Coast\Social;
 use Coast\Social\Provider;
 use Coast\Url;
-use Coast\Http;
+use Coast\Http as Http;
 
 abstract class External extends Provider
 {

@@ -19,38 +19,34 @@ class Pinterest extends External
 
     protected function _request($method, array $params = array())
     {
-        $jsonMethods = [
+        $jsonpMethods = [
             'urls/count'
         ];
-        if (in_array($method, $jsonMethods)) {
+        if (in_array($method, $jsonpMethods)) {
             $method .= '.json';
         }
 
-        $url = (new Url("{$this->_endpoint}{$method}"))->queryParams([
-            'access_token' => $this->_credentials['accessToken'],
-        ] + $params);
-           
-        $res = $this->_http->get($url);
-        if ($res->header('content-type') == 'application/javascript') {
-            $data = json_decode(substr($res->body(), 13, strlen($res->body()) - 14), true);
-            if ($data === false) {
-                throw new Social\Exception('Malformed JSON response');
-            }
-            $data = ['data' => $data];
-        } else {
-            if (strpos($res->header('content-type'), 'application/json') === false) {
-                throw new Social\Exception('Non JSON response');
-            }
-            $data = $res->json();
-            if ($data === false) {
-                throw new Social\Exception('Malformed JSON response');
-            }
+        $req = new Http\Request([
+            'url' => (new Url("{$this->_endpoint}{$method}"))->queryParams([
+                'access_token' => $this->_credentials['accessToken'],
+            ] + $params),
+        ]);            
+        $res = $this->_http->execute($req);
+
+        if (!$res->isJson() && !$res->isJavascript()) {
+            throw new Social\Exception('Non JSON response');
+        }
+        $data = $res->json(true);
+        if ($data === false) {
+            throw new Social\Exception('Malformed JSON response');
         }
         if (!$res->isSuccess() || isset($data['status']) && $data['status'] == 'failure') {
             throw new Social\Exception($data['message']);
         }
 
-        return $data['data'];
+        return isset($data['data'])
+            ? $data['data']
+            : $data;
     }
 
     protected function _feed(array $params)
