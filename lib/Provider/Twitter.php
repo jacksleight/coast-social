@@ -132,7 +132,7 @@ class Twitter extends External
         return parent::textToHtml($text);
     }
 
-    public function tweetToHtml($tweet)
+    public function tweetToHtml(array $tweet)
     {
         $entities = [];
         foreach ($tweet['entities']['urls'] as $entity) {
