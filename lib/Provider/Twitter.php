@@ -11,6 +11,7 @@ use Coast\Social;
 use Coast\Url;
 use Coast\Social\Provider;
 use Coast\Social\Provider\External;
+use Coast\Http;
 
 class Twitter extends External
 {
@@ -18,15 +19,16 @@ class Twitter extends External
 
     protected function _request($method, array $params = array())
     {
-        $url = new Url("{$this->_endpoint}{$method}.json");
-        $headers = ["Authorization: " . $this->_oauthHeader($url, $params)];
-        $url->queryParams($params);
-
-        $res = $this->_http->get($url, null, $headers);
-        if (strpos($res->header('content-type'), 'application/json') === false) {
+        $req = new Http\Request([
+            'url' => (new Url("{$this->_endpoint}{$method}.json"))->queryParams($params),
+        ]);
+        $this->_oauthHeader($req);
+        $res = $this->_http->execute($req);
+        
+        if (!$res->isJson()) {
             throw new Social\Exception('Non JSON response');
         }
-        $data = $res->json();
+        $data = $res->json(true);
         if ($data === false) {
             throw new Social\Exception('Malformed JSON response');
         }
@@ -37,8 +39,11 @@ class Twitter extends External
         return $data;
     }
 
-    protected function _oauthHeader(Url $url, $params = array())
+    protected function _oauthHeader(Http\Request $req)
     {
+        $params = $req->url()->queryParams();
+        $url    = $req->url()->toPart(Url::PART_PATH);
+
         $oauthParams = [
             'oauth_consumer_key'     => $this->_credentials['consumerKey'],
             'oauth_nonce'            => time(),
@@ -75,7 +80,7 @@ class Twitter extends External
         }
         $header = 'OAuth ' . implode(', ', $headerParts);
 
-        return $header;
+        $req->header('Authorization', $header);
     }
 
     protected function _feed(array $params)

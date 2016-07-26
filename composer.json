@@ -10,7 +10,7 @@
   ],
   "require": {
     "php": ">=5.5.0",
-    "jacksleight/coast": "0.5.*"
+    "jacksleight/coast": "dev-dev"
   },
   "autoload": {
     "psr-4": {
