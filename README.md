@@ -1,5 +1,8 @@
 # Coast Social
 
+[![Packagist](http://img.shields.io/packagist/v/jacksleight/coast-social.svg?style=flat-square)](https://packagist.org/packages/jacksleight/coast-social)
+[![License](http://img.shields.io/packagist/l/jacksleight/coast-social.svg?style=flat-square)](https://packagist.org/packages/jacksleight/coast-social)
+
 Coast Social can retrieve latest post feeds and URL statistics from various social media platforms in a standardised format. It is currently a work in progress, there are not yet any stable releases.
 
 ## What's Supported?
