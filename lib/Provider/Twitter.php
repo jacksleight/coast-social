@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright 2015 Jack Sleight <http://jacksleight.com/>
+ * Copyright 2017 Jack Sleight <http://jacksleight.com/>
  * This source file is subject to the MIT license that is bundled with this package in the file LICENCE. 
  */
 
@@ -24,7 +24,7 @@ class Twitter extends External
         ]);
         $this->_oauthHeader($req);
         $res = $this->_http->execute($req);
-        
+
         if (!$res->isJson()) {
             throw new Social\Exception('Non JSON response');
         }
@@ -55,12 +55,12 @@ class Twitter extends External
         $compositeSecret =
             rawurlencode($this->_credentials['consumerSecret']) . '&' .
             rawurlencode($this->_credentials['oauthAccessTokenSecret']);
-        
+
         $signatureParams = $oauthParams + $params;
         ksort($signatureParams);
         $signatureParts = [];
         foreach($signatureParams as $name => $value) {
-            $signatureParts[] = 
+            $signatureParts[] =
                 rawurlencode($name) . '=' .
                 rawurlencode($value);
         }
@@ -73,7 +73,7 @@ class Twitter extends External
         $signature = hash_hmac('sha1', $signatureData, $compositeSecret, true);
         $signature = base64_encode($signature);
         $oauthParams['oauth_signature'] = $signature;
-        
+
         $headerParts = [];
         foreach($oauthParams as $name => $value) {
             $headerParts[] = $name . '="' . rawurlencode($value) . '"';
@@ -92,7 +92,7 @@ class Twitter extends External
         $data = $this->fetch('statuses/user_timeline', [
             'screen_name' => $params['username'],
             'count'       => $params['limit'],
-        ] + $params['native']);
+        ] + $params['raw']);
 
         $feed = [];
         foreach ($data as $tweet) {
@@ -109,7 +109,7 @@ class Twitter extends External
                     'name'     => $tweet['user']['name'],
                     'username' => $tweet['user']['screen_name'],
                 ],
-                'native' => $tweet,
+                'raw' => $tweet,
             ];
             if (isset($tweet['entities']['media'])) {
                 foreach ($tweet['entities']['media'] as $media) {
@@ -133,7 +133,7 @@ class Twitter extends External
     {
         $text = preg_replace("/@(\w+)/", '<a href="http://www.twitter.com/$1" target="_blank">@$1</a>', $text); 
         $text = preg_replace("/\#(\w+)/", '<a href="http://search.twitter.com/search?q=$1" target="_blank">#$1</a>', $text); 
-        
+
         return parent::textToHtml($text);
     }
 

@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright 2015 Jack Sleight <http://jacksleight.com/>
+ * Copyright 2017 Jack Sleight <http://jacksleight.com/>
  * This source file is subject to the MIT license that is bundled with this package in the file LICENCE. 
  */
 
@@ -18,6 +18,8 @@ abstract class External extends Provider
     protected $_http;
 
     protected $_endpoint;
+
+    protected $_cache;
 
     public function __construct(array $options = array())
     {
@@ -43,13 +45,14 @@ abstract class External extends Provider
             serialize($params)
         );
 
-        $cache = new \Memcached();
-        $cache->addServer('localhost', 11211);
-
-        $data = $cache->get($key);
-        if ($data === false) {
+        if (isset($this->_cache)) {
+            $data = apcu_fetch($key);
+            if ($data === false) {
+                $data = $this->request($method, $params);
+                apcu_add($key, $data, $lifetime);
+            }
+        } else {
             $data = $this->request($method, $params);
-            $cache->set($key, $data, $lifetime);
         }
 
         return $data;

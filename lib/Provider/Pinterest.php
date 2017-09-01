@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright 2015 Jack Sleight <http://jacksleight.com/>
+ * Copyright 2017 Jack Sleight <http://jacksleight.com/>
  * This source file is subject to the MIT license that is bundled with this package in the file LICENCE. 
  */
 
@@ -30,7 +30,7 @@ class Pinterest extends External
             'url' => (new Url("{$this->_endpoint}{$method}"))->queryParams([
                 'access_token' => $this->_credentials['accessToken'],
             ] + $params),
-        ]);            
+        ]);
         $res = $this->_http->execute($req);
 
         if (!$res->isJson() && !$res->isJavascript()) {
@@ -58,7 +58,7 @@ class Pinterest extends External
         $data = $this->fetch("boards/{$params['id']}/pins", [
             'fields' => 'id,link,url,creator(id,username,first_name,last_name,bio,created_at,counts,image,url),board,created_at,note,color,counts,media,attribution,image,metadata',
             'limit'  => $params['limit'],
-        ] + $params['native']);
+        ] + $params['raw']);
 
         $feed = [];
         foreach ($data as $pin) {
@@ -79,7 +79,7 @@ class Pinterest extends External
                     'name'     => "{$pin['creator']['first_name']} {$pin['creator']['last_name']}",
                     'username' => $pin['creator']['username'],
                 ],
-                'native' => $pin,
+                'raw' => $pin,
             ];
         }
 
@@ -102,6 +102,7 @@ class Pinterest extends External
 
         $stats = [
             'shares' => $data['count'],
+            'raw'    => $data,
         ];
 
         return $stats;

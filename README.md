@@ -21,9 +21,9 @@ Parameter     | Default | Facebook       | Twitter        | Instagram      | Pin
 id            |         | :black_circle: |                | :black_circle: | :black_circle:
 username      |         | :black_circle: | :black_circle: | :black_circle: | 
 limit         | 10      | :black_circle: | :black_circle: | :black_circle: | :black_circle:
-native        | []      | :black_circle: | :black_circle: | :black_circle: | :black_circle:
+raw           | []      | :black_circle: | :black_circle: | :black_circle: | :black_circle:
 
-* The native parameter allows you to parse additional parameters to each providers API, refer to the relevant API documentation for more information.
+* The raw parameter allows you to parse additional parameters to each providers API, refer to the relevant API documentation for more information.
 
 ###### Output
 
@@ -41,9 +41,9 @@ user.id       | :black_circle: | :black_circle: | :black_circle: | :black_circle
 user.url      | :black_circle: | :black_circle: | :black_circle: | :black_circle:
 user.name     | :black_circle: | :black_circle: | :black_circle: | :black_circle:
 user.username |                | :black_circle: | :black_circle: | :black_circle:
-native        | :black_circle: | :black_circle: | :black_circle: | :black_circle:
+raw           | :black_circle: | :black_circle: | :black_circle: | :black_circle:
 
-* The native parameter contains the unmodified source from the API response.
+* The raw parameter contains the unmodified source from the API response.
 
 #### urlStats
 
@@ -116,7 +116,7 @@ $feed = $twitter->feed([
 ```php
 $instagram = new Coast\Social\Provider\Instagram([
     'credentials' => [
-        'clientId' => '',
+        'accessToken' => '',
     ],
 ]);
 $feed = $instagram->feed([
@@ -124,6 +124,9 @@ $feed = $instagram->feed([
     'username' => '',
 ]);
 ```
+
+To get an Instagram access token create a client at [https://www.instagram.com/developer/](https://www.instagram.com/developer/), enable implicit OAuth in the security settings, and then request `https://api.instagram.com/oauth/authorize/?client_id=[CLIENTID]&redirect_uri=[REDIRECTURI]&response_type=token&scope=basic+public_content
+`. The access token will appear in the redirect URI's query parameters.
 
 #### Pinterest
 

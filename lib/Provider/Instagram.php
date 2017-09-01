@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright 2015 Jack Sleight <http://jacksleight.com/>
+ * Copyright 2017 Jack Sleight <http://jacksleight.com/>
  * This source file is subject to the MIT license that is bundled with this package in the file LICENCE. 
  */
 
@@ -21,11 +21,11 @@ class Instagram extends External
     {
         $req = new Http\Request([
             'url' => (new Url("{$this->_endpoint}{$method}"))->queryParams([
-                'client_id' => $this->_credentials['clientId'],
+                'access_token' => $this->_credentials['accessToken'],
             ] + $params),
         ]);
         $res = $this->_http->execute($req);
-        
+
         if (!$res->isJson()) {
             throw new Social\Exception('Non JSON response');
         }
@@ -63,7 +63,7 @@ class Instagram extends External
 
         $data = $this->fetch("users/{$params['id']}/media/recent", [
             'count' => $params['limit'],
-        ] + $params['native']);
+        ] + $params['raw']);
 
         $feed = [];
         foreach ($data as $post) {
@@ -84,7 +84,7 @@ class Instagram extends External
                     'name'     => $post['user']['full_name'],
                     'username' => $post['user']['username'],
                 ],
-                'native' => $post,
+                'raw' => $post,
             ];
         }
 

@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright 2015 Jack Sleight <http://jacksleight.com/>
+ * Copyright 2017 Jack Sleight <http://jacksleight.com/>
  * This source file is subject to the MIT license that is bundled with this package in the file LICENCE. 
  */
 
@@ -23,9 +23,9 @@ class Facebook extends External
             'url' => (new Url("{$this->_endpoint}{$method}"))->queryParams([
                 'access_token' => $this->_credentials['accessToken'],
             ] + $params),
-        ]);           
+        ]);
         $res = $this->_http->execute($req);
-        
+
         if (!$res->isJson()) {
             throw new Social\Exception('Non JSON response');
         }
@@ -52,7 +52,7 @@ class Facebook extends External
         $data = $this->fetch("{$id}/feed", [
             'fields' => 'id,created_time,name,caption,description,link,picture,properties,type,from{id,name},message',
             'limit'  => $params['limit'],
-        ] + $params['native']);
+        ] + $params['raw']);
 
         $feed = [];
         foreach ($data['data'] as $post) {
@@ -73,7 +73,7 @@ class Facebook extends External
                     'url'      => new Url("https://www.facebook.com/{$post['from']['id']}"),
                     'name'     => $post['from']['name'],
                 ],
-                'native' => $post,
+                'raw' => $post,
             ];
         }
 
@@ -90,6 +90,7 @@ class Facebook extends External
         $stats = [
             'shares'   => $data['share']['share_count'],
             'comments' => $data['share']['comment_count'],
+            'raw'      => $data,
         ];
 
         return $stats;

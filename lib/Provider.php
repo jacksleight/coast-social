@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright 2015 Jack Sleight <http://jacksleight.com/>
+ * Copyright 2017 Jack Sleight <http://jacksleight.com/>
  * This source file is subject to the MIT license that is bundled with this package in the file LICENCE. 
  */
 
@@ -15,7 +15,7 @@ abstract class Provider
     {
         foreach ($options as $name => $value) {
             if ($name[0] == '_') {
-                throw new \Coast\Exception("Access to '{$name}' is prohibited");  
+                throw new \Coast\Exception("Access to '{$name}' is prohibited");
             }
             $this->$name($value);
         }
@@ -27,7 +27,7 @@ abstract class Provider
             'id'       => null,
             'username' => null,
             'limit'    => 10,
-            'native'   => [],
+            'raw'      => [],
         ];
 
         $feed = $this->_feed($params);
@@ -56,7 +56,7 @@ abstract class Provider
                     'name'     => null,
                     'username' => null,
                 ],
-                'native' => null,
+                'raw' => null,
             ], $item);
         }
 
@@ -73,6 +73,7 @@ abstract class Provider
         $stats = \Coast\array_merge_smart([
             'shares'   => null,
             'comments' => null,
+            'raw'      => null,
         ], $stats);
 
         return $stats;
