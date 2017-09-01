@@ -19,8 +19,6 @@ abstract class External extends Provider
 
     protected $_endpoint;
 
-    protected $_cache;
-
     public function __construct(array $options = array())
     {
         parent::__construct($options);
@@ -38,22 +36,20 @@ abstract class External extends Provider
 
     public function fetch($method, array $params = array(), $lifetime = 3600)
     {
-        $key = md5(
-            get_class($this) .
-            serialize($this->_credentials) .
-            $method .
-            serialize($params)
-        );
+        // @todo Implement proper caching
+        // $key = md5(
+        //     get_class($this) .
+        //     serialize($this->_credentials) .
+        //     $method .
+        //     serialize($params)
+        // );
+        // $data = apcu_fetch($key);
+        // if ($data === false) {
+        //     $data = $this->request($method, $params);
+        //     apcu_add($key, $data, $lifetime);
+        // }
 
-        if (isset($this->_cache)) {
-            $data = apcu_fetch($key);
-            if ($data === false) {
-                $data = $this->request($method, $params);
-                apcu_add($key, $data, $lifetime);
-            }
-        } else {
-            $data = $this->request($method, $params);
-        }
+        $data = $this->request($method, $params);
 
         return $data;
     }
