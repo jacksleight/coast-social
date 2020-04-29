@@ -19,12 +19,12 @@ urlStats      | :black_circle: |                |                | :black_circle
 
 ###### Input
 
-Parameter     | Default | Facebook       | Twitter        | Instagram      | Pinterest
---------------| --------|----------------|----------------|----------------|---------------
-id            |         | :black_circle: |                | :black_circle: | :black_circle:
-username      |         | :black_circle: | :black_circle: | :black_circle: | 
-limit         | 10      | :black_circle: | :black_circle: | :black_circle: | :black_circle:
-raw           | []      | :black_circle: | :black_circle: | :black_circle: | :black_circle:
+Parameter     | Facebook            | Twitter             | Instagram           | Pinterest
+--------------| --------------------|---------------------|---------------------|--------------------
+id            | :black_circle:      |                     | :black_circle: (me) | :black_circle:
+username      | :black_circle:      | :black_circle:      |                     | 
+limit         | :black_circle: (10) | :black_circle: (10) | :black_circle: (10) | :black_circle: (10)
+raw           | :black_circle: ([]) | :black_circle: ([]) | :black_circle: ([]) | :black_circle: ([])
 
 * The raw parameter allows you to parse additional parameters to each providers API, refer to the relevant API documentation for more information.
 
@@ -38,11 +38,11 @@ date          | :black_circle: | :black_circle: | :black_circle: | :black_circle
 text          | :black_circle: | :black_circle: | :black_circle: | :black_circle:
 html          | :black_circle: | :black_circle: | :black_circle: | :black_circle:
 image.url     | :white_circle: | :white_circle: | :black_circle: | :black_circle: 
-image.width   |                | :white_circle: | :black_circle: | :black_circle: 
-image.height  |                | :white_circle: | :black_circle: | :black_circle: 
+image.width   |                | :white_circle: |                | :black_circle: 
+image.height  |                | :white_circle: |                | :black_circle: 
 user.id       | :black_circle: | :black_circle: | :black_circle: | :black_circle:
 user.url      | :black_circle: | :black_circle: | :black_circle: | :black_circle:
-user.name     | :black_circle: | :black_circle: | :black_circle: | :black_circle:
+user.name     | :black_circle: | :black_circle: |                | :black_circle:
 user.username |                | :black_circle: | :black_circle: | :black_circle:
 raw           | :black_circle: | :black_circle: | :black_circle: | :black_circle:
 
@@ -122,14 +122,10 @@ $instagram = new Coast\Social\Provider\Instagram([
         'accessToken' => '',
     ],
 ]);
-$feed = $instagram->feed([
-    'id'       => '', // User ID
-    'username' => '',
-]);
+$feed = $instagram->feed();
 ```
 
-To get an Instagram access token create a client at [https://www.instagram.com/developer/](https://www.instagram.com/developer/), enable implicit OAuth in the security settings, and then request `https://api.instagram.com/oauth/authorize/?client_id=[CLIENTID]&redirect_uri=[REDIRECTURI]&response_type=token&scope=basic+public_content
-`. The access token will appear in the redirect URI's query parameters.
+The Instagram provider uses the [Instagram Basic Display API](https://developers.facebook.com/docs/instagram-basic-display-api). Use the [User Token Generator](https://developers.facebook.com/docs/instagram-basic-display-api/overview#user-token-generator) to generate an access token. The Instagram Basic Display API only allows access your own data. The input `id` parameter can be specified, but it is not required and will default to `me`;
 
 #### Pinterest
 

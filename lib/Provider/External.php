@@ -19,6 +19,8 @@ abstract class External extends Provider
 
     protected $_endpoint;
 
+    protected $_isRefreshed = false;
+
     public function __construct(array $options = array())
     {
         parent::__construct($options);
@@ -64,6 +66,10 @@ abstract class External extends Provider
 
     public function request($method, array $params = array())
     {
+        if (!$this->_isRefreshed) {
+            $this->_refresh();
+            $this->_isRefreshed = true;
+        }
         try {
             return $this->_request($method, $params);
         } catch (Social\Exception $e) {
@@ -72,6 +78,9 @@ abstract class External extends Provider
             throw new Social\Exception($e->getMessage());
         }
     }
+
+    protected function _refresh()
+    {}
 
     abstract protected function _request($method, array $params = array());
 }

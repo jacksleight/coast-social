@@ -15,7 +15,16 @@ use Coast\Http;
 
 class Instagram extends External
 {
-    protected $_endpoint = 'https://api.instagram.com/v1/';
+    protected $_endpoint = 'https://graph.instagram.com/';
+
+    // protected function _refresh()
+    // {
+    //     $data = $this->_request("refresh_access_token", [
+    //         'grant_type' => 'ig_refresh_token',
+    //     ]);
+    //     var_dump($data);
+    //     die;
+    // }
 
     protected function _request($method, array $params = array())
     {
@@ -33,59 +42,62 @@ class Instagram extends External
         if ($data === false) {
             throw new Social\Exception('Malformed JSON response');
         }
-        if (!$res->isSuccess() || $data['meta']['code'] != 200) {
-            throw new Social\Exception($data['meta']['error_message']);
+        if (!$res->isSuccess() || isset($data['error'])) {
+            throw new Social\Exception($data['error']['message']);
         }
 
-        return $data['data'];
+        return $data;
     }
 
     protected function _feed(array $params)
     {
-        if (!isset($params['id']) && !isset($params['username'])) {
-            throw new Social\Exception('No ID or username specified');
-        }
-
         if (!isset($params['id'])) {
-            $data = $this->fetch("users/search", [
-                'q' => $params['username'],
-            ], null);
-            foreach ($data as $user) {
-                if ($user['username'] == $params['username']) {
-                    $params['id'] = $user['id'];
-                    break;
-                }
-            }
-            if (!isset($params['id'])) {
-                throw new Social\Exception("Username '{$params['username']}' does not exist");
-            }
+            $params['id'] = 'me';
         }
 
-        $data = $this->fetch("users/{$params['id']}/media/recent", [
-            'count' => $params['limit'],
+        $user = $this->fetch("{$params['id']}", [
+            'fields' => 'id,username',
+        ]);
+        $data = $this->fetch("{$params['id']}/media", [
+            'fields' => 'id,caption,media_type,media_url,permalink,thumbnail_url,timestamp,children{id,media_url}',
         ] + $params['raw']);
 
         $feed = [];
-        foreach ($data as $post) {
+        foreach ($data['data'] as $post) {
+            $post = $post + [
+                'caption' => null,
+            ];
+            if ($post['media_type'] == 'IMAGE') {
+                $image = [
+                    'url' => new Url($post['media_url']),
+                ];
+            } else if ($post['media_type'] == 'VIDEO') {
+                $image = [
+                    'url' => new Url($post['thumbnail_url']),
+                ];
+            } else if ($post['media_type'] == 'CAROUSEL_ALBUM') {
+                $image = [
+                    'url' => new Url($post['children']['data'][0]['media_url']),
+                ];
+            }
             $feed[] = [
                 'id'    => $post['id'],
-                'url'   => new Url($post['link']),
-                'date'  => new DateTime("@{$post['created_time']}"),
-                'text'  => $post['caption']['text'],
-                'html'  => $this->textToHtml($post['caption']['text']),
-                'image' => [
-                    'url'    => new Url($post['images']['standard_resolution']['url']),
-                    'width'  => $post['images']['standard_resolution']['width'],
-                    'height' => $post['images']['standard_resolution']['height'],
-                ],
+                'url'   => new Url($post['permalink']),
+                'date'  => new DateTime($post['timestamp']),
+                'text'  => $post['caption'],
+                'html'  => $this->textToHtml($post['caption']),
+                'image' => $image,
                 'user'  => [
-                    'id'       => $post['user']['id'],
-                    'url'      => new Url("https://www.instagram.com/{$post['user']['username']}/"),
-                    'name'     => $post['user']['full_name'],
-                    'username' => $post['user']['username'],
+                    'id'       => $user['id'],
+                    'url'      => new Url("https://www.instagram.com/{$user['username']}/"),
+                    'username' => $user['username'],
                 ],
                 'raw' => $post,
             ];
+        }
+
+        if (isset($params['limit'])) {
+            $feed = array_slice($feed, 0, $params['limit']);
         }
 
         return $feed;
