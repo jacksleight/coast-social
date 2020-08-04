@@ -7,3 +7,7 @@
 ### 0.2.0
 
 * Update to Instagram Basic Display API
+
+### 0.2.1
+
+* Bump
