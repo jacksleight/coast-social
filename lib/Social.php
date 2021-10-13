@@ -11,7 +11,7 @@ use Coast\Social\Provider;
 
 class Social extends Provider
 {
-    const VERSION = '0.2.2';
+    const VERSION = '0.2.3';
 
     protected $_providers = [];
 
